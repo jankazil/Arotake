@@ -1,6 +1,6 @@
 # Arotake
 
-**Arotake** short description.
+**Arotake** is a Python toolkit for the evaluation of meteorological forecast models against observations.
 
 ## Public API
 
@@ -17,6 +17,10 @@
 - `make type` - Runs mypy, the static type checker, using the strictness settings from `pyproject.toml`. Mypy is a static type checker for Python, a dynamically typed language. Because static analysis cannot account for all dynamic runtime behaviors, mypy may report false positives which do no reflect actual runtime issues. The usefulness of mypy is therefore limited, unless the developer compensates with extra work for the choices that were made when Python was originally designed.
 - `make test` - Runs pytest with coverage reporting (configured in `pyproject.toml`).
 
+## Name
+
+Arotake is a word in te reo Māori meaning “review” or “evaluate.” The name reflects the project’s focus on the evaluation of meteorological models. The author acknowledges the Māori origin of this name and uses it with respect for te reo Māori (the Māori language).
+
 ## Author
 
 Jan Kazil - jan.kazil.dev@gmail.com - [jankazil.com](https://jankazil.com)
@@ -24,4 +28,3 @@ Jan Kazil - jan.kazil.dev@gmail.com - [jankazil.com](https://jankazil.com)
 ## License
 
 BSD-3-Clause
-
