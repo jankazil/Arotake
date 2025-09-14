@@ -74,5 +74,6 @@ quote-style = "preserve"
 #files = ["src/arotake", "scripts"]
 
 [tool.pytest.ini_options]
-addopts = "-q --cov=arotake --cov-report=term-missing"
 testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
