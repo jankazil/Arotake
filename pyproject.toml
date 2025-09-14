@@ -11,18 +11,18 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [{ name = "Jan Kazil" }]
 
+[project]
 dependencies = [
   "cartopy>=0.25.0",
   "geopandas>=1.1.1",
-  "isd_lite_data>=2.0.0",
   "matplotlib>=3.10.6",
   "numpy>=2.3.3",
   "pandas>=2.3.2",
   "regionmask>=0.13.0",
-  "Shapely>=2.1.1",
+  "shapely>=2.1.1",
   "xarray>=2025.8.0",
   "xesmf>=0.8.10",
-  "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data@v2.0.2",
+  "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data@v2.0.2"
 ]
 
 [project.optional-dependencies]
