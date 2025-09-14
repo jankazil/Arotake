@@ -22,12 +22,8 @@ dependencies = [
   "Shapely>=2.1.1",
   "xarray>=2025.8.0",
   "xesmf>=0.8.10"
+  "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data@v2.0.2",
 ]
-
-# Ignore the import of isd_lite_data until isd_lite_data becomes an installable package on GitHub
-[[tool.mypy.overrides]]
-module = ["isd_lite_data"]
-ignore_missing_imports = true
 
 [project.optional-dependencies]
 dev = [
