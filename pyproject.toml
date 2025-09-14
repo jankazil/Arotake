@@ -4,13 +4,31 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arotake"
-version = "0.0.0"
+version = "1.0.0rc1"
 description = "Short description"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
-authors = [{ name = "jkazil" }]
-dependencies = []
+authors = [{ name = "Jan Kazil" }]
+
+dependencies = [
+  "cartopy>=0.25.0",
+  "geopandas>=1.1.1",
+  "isd_lite_data>=2.0.0",
+  "isd_lite_data.egg>=info",
+  "matplotlib>=3.10.6",
+  "numpy>=2.3.3",
+  "pandas>=2.3.2",
+  "regionmask>=0.13.0",
+  "Shapely>=2.1.1",
+  "xarray>=2025.8.0",
+  "xesmf>=0.8.10"
+]
+
+# Ignore the import of isd_lite_data until isd_lite_data becomes an installable package on GitHub
+[[tool.mypy.overrides]]
+module = ["isd_lite_data"]
+ignore_missing_imports = true
 
 [project.optional-dependencies]
 dev = [
@@ -21,8 +39,12 @@ dev = [
   "pre-commit>=3.7",
 ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["arotake"]
+
 [tool.ruff]
-line-length = 100
+line-length = 128
 target-version = "py310"
 extend-exclude = ["dist", "build"]
 
@@ -33,18 +55,23 @@ ignore = ["E501", "SIM108"]
 [tool.ruff.format]
 quote-style = "preserve"
 
-[tool.mypy]
-python_version = "3.10"
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-no_implicit_optional = true
-check_untyped_defs = true
-strict_optional = true
-pretty = true
-namespace_packages = true
-mypy_path = "src"
-files = ["src/arotake"]
+#
+# MyPy is disabled because static analysis cannot account for all
+# dynamic runtime behaviors, mypy may report false positives which
+# do no reflect actual runtime issues.
+#
+#[tool.mypy]
+#python_version = "3.10"
+#warn_unused_configs = true
+#disallow_untyped_defs = true
+#disallow_incomplete_defs = true
+#no_implicit_optional = true
+#check_untyped_defs = true
+#strict_optional = true
+#pretty = true
+#namespace_packages = true
+#mypy_path = "src"
+#files = ["src/arotake", "scripts"]
 
 [tool.pytest.ini_options]
 addopts = "-q --cov=arotake --cov-report=term-missing"

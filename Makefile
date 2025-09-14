@@ -1,4 +1,4 @@
-.PHONY: fmt lint type test check clean 
+.PHONY: fmt lint type test check clean
 
 fmt:
 	python -m ruff format
