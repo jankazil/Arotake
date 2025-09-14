@@ -15,7 +15,6 @@ dependencies = [
   "cartopy>=0.25.0",
   "geopandas>=1.1.1",
   "isd_lite_data>=2.0.0",
-  "isd_lite_data.egg>=info",
   "matplotlib>=3.10.6",
   "numpy>=2.3.3",
   "pandas>=2.3.2",
