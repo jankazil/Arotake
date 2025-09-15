@@ -14,7 +14,6 @@ authors = [{ name = "Jan Kazil" }]
 dependencies = [
   "cartopy>=0.25.0",
   "geopandas>=1.1.1",
-  "isd_lite_data>=2.0.0",
   "matplotlib>=3.10.6",
   "numpy>=2.3.3",
   "pandas>=2.3.2",
