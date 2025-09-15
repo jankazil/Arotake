@@ -24,7 +24,7 @@ The workflow is
 
 1. Data preparation:
    - Download RTO/ISO regions in GEOJson format, only once
-   - Download HRRR surface forecast data, only once for a given time range
+   - Download HRRR contiguous United States surface forecast data, only once for a given time range
 2. Download and construct RTO/ISO region ISD-Lite Datasets, only once for a given time range
 3. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
 
