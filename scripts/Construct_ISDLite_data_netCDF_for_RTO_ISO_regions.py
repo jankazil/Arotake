@@ -140,8 +140,6 @@ regions = ['MISO', 'PJM', 'ERCOT', 'CAISO', 'SPP', 'ISONE', 'NYISO']
 
 # Save the station metadata for each RTO/ISO region in files in ISD station "history" file format
 
-isd_rto_iso_dir = Path('..') / 'data' / 'RTO_ISO_regions_ISD_stations'
-
 for region in regions:
     mask = isd_stations_regions_gdf['rto_iso_region'] == region
 
@@ -149,7 +147,7 @@ for region in regions:
 
     isd_stations_meta_data_file_path = region + '.' + str(start_date.year) + '-' + str(end_date.year) + '_ISD_stations.txt'
 
-    isd_stations_meta_data_file_path = isd_rto_iso_dir / isd_stations_meta_data_file_path
+    isd_stations_meta_data_file_path = isdlite_data_dir / isd_stations_meta_data_file_path
 
     isd_stations_meta_data_file_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -304,7 +302,7 @@ for region in regions:
 
     isd_stations_meta_data_file_path = region + '.' + str(start_date.year) + '-' + str(end_date.year) + '_ISD_stations.txt'
 
-    isd_stations_meta_data_file_path = isd_rto_iso_dir / isd_stations_meta_data_file_path
+    isd_stations_meta_data_file_path = isdlite_data_dir / isd_stations_meta_data_file_path
 
     region_stations = stations.Stations.from_file(isd_stations_meta_data_file_path)
 
