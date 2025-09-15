@@ -66,7 +66,7 @@ This will:
 Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <forecast_init_hour> <forecast_lead_hour> <geojson_file> <isdlite_data_dir> <hrrr_data_dir> <out_dir>
 ```
 
-<hrrr_data_dir\> is the parent directory of the HRRR data directory, which has the following structure (see Section ''Data Preparation''):  
+<hrrr_data_dir\> is the parent directory of a data directory tree which contains the HRRR netCDF files as follows (see Section ''Data Preparation''):  
 
 hrrr.<YYYYMMDD\>/conus/hrrr.t<II\>z.wrfsfcf<FF\>_select_vars.nc
 
