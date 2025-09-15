@@ -39,7 +39,7 @@ The workflow is
 
         hrrr.<YYYYMMDD\>/conus/hrrr.t<II\>z.wrfsfcf<FF\>_select_vars.nc
 
-### 2. Construct RTO/ISO region ISD-Lite Datasets
+## 2. Construct RTO/ISO region ISD-Lite Datasets
 
 ```bash
 Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <geojson_file> <isdlite_data_dir> [-n <n_jobs>]
@@ -60,7 +60,7 @@ This will:
 - Download observations (parallelized if `-n` > 1).  
 - Save region-specific NetCDF files with the observations.  
 
-### 3. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
+## 3. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
 
 ```bash
 Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <forecast_init_hour> <forecast_lead_hour> <geojson_file> <isdlite_data_dir> <hrrr_data_dir> <out_dir>
