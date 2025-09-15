@@ -1,104 +1,8 @@
 #!/usr/bin/env python
 
-'''
-Construct ISD-Lite station metadata, a station map, and per-region ISD-Lite
-netCDF files for U.S. RTO/ISO regions over a configurable period.
-
-Overview
---------
-This script performs an end-to-end workflow to:
-1) Load RTO/ISO geographic regions from GeoJSON.
-2) Load the NCEI ISD station "history" metadata, restrict to a bounding box
-   over the CONUS, and further filter stations by observed data availability
-   within the requested time window.
-3) Spatially join stations to their containing RTO/ISO region.
-4) For each target region, write a region-specific ISD "history" file that
-   preserves the ISD text format.
-5) Render and save a Cartopy map of all retained stations, colored by region.
-6) For each region, download ISD-Lite observation files for all retained
-   stations for the requested years (skipping unchanged local files),
-   load observations, attach region metadata, and save a consolidated
-   netCDF file of ISD-Lite observations.
-
-Inputs (on disk)
-----------------
-
-- RTO/ISO regions GeoJSON:
-
-    ../data/RTO_ISO_regions.geojson
-
-  This Regional Transmission Organization / Independent System Operators map can be obtained from
-
-    https://atlas.eia.gov/datasets/rto-regions
-
-- ISD station "history" file (text):
-
-    ../data/ISD-LITE/data/isd-history.txt
-
-  This can be downloaded with https://github.com/jankazil/isd-lite-data/blob/main/demos/demo_ncei_download_stations.py
-
-- Local ISD-Lite data directory
-
-    ../data/ISD-LITE/data/
-
-  These data can be downloaded with the "CONUS" scripts in https://github.com/jankazil/isd-lite-data/tree/main/scripts
-
-Key Configuration (edit in code)
---------------------------------
-
-- Time window:
-    start_year, end_year
-    start_date = datetime(start_year, 12, 2)   # HRRR v4 operational start
-    end_date   = datetime(end_year, 6, 30, 23, 59, 59)
-- Spatial filter (CONUS bounding box):
-    min_lat = 24, max_lat = 50, min_lon = -125, max_lon = -65
-- Regions to process and their display order:
-    regions = ['MISO', 'PJM', 'ERCOT', 'CAISO', 'SPP', 'ISONE', 'NYISO']
-
-Outputs (on disk)
------------------
-
-- Region-specific ISD station metadata files (ISD "history" text format):
-    ../data/RTO_ISO_regions_ISD_stations/{REGION}.{YYYY}-{YYYY}_ISD_stations.txt
-- Station map PNG (Cartopy Lambert Conformal projection approximating HRRR):
-    ../data/RTO_ISO_regions_ISD_stations/RTO_ISO_regions_ISD_stations_map.png
-- Region-specific ISD-Lite observations in netCDF:
-    ../data/RTO_ISO_regions_ISD_stations/{REGION}.{YYYY}-{YYYY}_ISD_Lite_observations.nc
-
-Data Processing Details
------------------------
-
-- Station metadata are loaded via isd_lite_data.stations.Stations.from_file(...)
-  and filtered by:
-    a) geographic bounding box (EPSG:4326 coordinates)
-    b) observed data availability within [start_date, end_date]
-- Regions are assigned with a GeoPandas spatial join using predicate "covered_by".
-- Map rendering uses Cartopy with coastlines, national borders, U.S. states,
-  labeled graticules, and a legend keyed by region with per-region marker sizes.
-- ISD-Lite files are downloaded from NCEI using ncei.download_many(...) with
-  change detection (skips unchanged files). Observations are then loaded into
-  each region's Stations object and written to netCDF via
-  write_observations2netcdf(...). A global attribute "region" is set on the
-  output.
-
-Assumptions and Conventions
----------------------------
-
-- Coordinate reference system for vector data is EPSG:4326 (lat/lon degrees).
-- Region geometries are expected to cover stations ("covered_by" predicate).
-- The time window is inclusive of station-level availability filtering and is
-  year-spanning for downloads (start_year..end_year).
-- File system layout matches the relative paths referenced above.
-
-Notes
------
-
-- Filtering by data availability can be time-consuming; n_jobs is configurable.
-- The map title documents access dates for the ISD and RTO/ISO region sources.
-- Output folders are created if they do not exist.
-'''
-
-from datetime import datetime
+import argparse
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import cartopy.crs as ccrs
@@ -113,32 +17,81 @@ from shapely.geometry import Point
 from arotake import rto_iso
 
 #
-# Time period - HRRR v4 became operational December 2 2020
+# Command line arguments
 #
 
-start_year = 2020
-end_year = 2025
 
-start_date = datetime(start_year, 12, 2)
-end_date = datetime(end_year, 6, 30, 23, 59, 59)
+def arg_parse(argv=None):
+    '''
+    Argument parser which returns the parsed values given as arguments.
+    '''
+
+    code_description = (
+        'Download, filter, and visualize NOAA ISD-Lite station data for a specified date range, '
+        'grouping stations by Regional Transmission Organization (RTO) / Independent System Operator (ISO) regions. '
+        'Given a start and end date, a path to the RTO/ISO GeoJSON, and a target data directory, '
+        'the script retrieves station metadata, filters stations to the contiguous U.S., checks data availability, '
+        'associates stations with RTO/ISO regions, saves region-specific station lists, and plots station locations '
+        'on a map using Cartopy. It then downloads the ISD-Lite observations (optionally in parallel), loads them '
+        'into memory, assigns region attributes, and writes the results as region-specific netCDF files.'
+    )
+
+    parser = argparse.ArgumentParser(description=code_description)
+
+    # Mandatory arguments
+    parser.add_argument('start_year', type=int, help='Start year of time range.')
+    parser.add_argument('start_month', type=int, help='Start month of time range.')
+    parser.add_argument('start_day', type=int, help='Start day of time range.')
+    parser.add_argument('end_year', type=int, help='End year of time range.')
+    parser.add_argument('end_month', type=int, help='End month of time range.')
+    parser.add_argument('end_day', type=int, help='End day of time range.')
+    parser.add_argument(
+        'path_to_geojson',
+        type=str,
+        help='Path to RTO/ISO geometries file (available from https://atlas.eia.gov/datasets/rto-regions)',
+    )
+    parser.add_argument(
+        'isdlite_data_dir',
+        type=str,
+        help='Directory where ISDLite data are located/will be downloaded to. Will be created if it does not exist.',
+    )
+
+    # Optional arguments
+    parser.add_argument(
+        '-n',
+        '--n',
+        type=int,
+        help='Number of parallel download processes. n > 1 accelerates downloads significantly, but can result in network errors or in the server refusing to cooperate. In case of errors, set to 1',
+    )
+
+    args = parser.parse_args()
+
+    start_date = datetime(year=args.start_year, month=args.start_month, day=args.start_day, tzinfo=timezone.utc)
+    end_date = datetime(year=args.end_year, month=args.end_month, day=args.end_day, tzinfo=timezone.utc)
+    path_to_geojson = Path(args.path_to_geojson)
+    isdlite_data_dir = Path(args.isdlite_data_dir)
+    n_jobs = args.n
+
+    return (start_date, end_date, path_to_geojson, isdlite_data_dir, n_jobs)
+
+
+(start_date, end_date, path_to_geojson, isdlite_data_dir, n_jobs) = arg_parse(sys.argv[1:])
 
 #
-# RTO/ISO geometries file
+# Read RTO/ISO geometries from file
 #
-
-path_to_geojson = Path('') / '..' / 'data' / 'RTO_ISO_regions.geojson'
 
 regions_gdf = rto_iso.regions(path_to_geojson)
 
 #
-# ISDLite station meta data
+# Download ISDLite station meta data
 #
 
-# Directory where ISDLite data is located/will be downloaded to
-isdlite_data_dir = Path('..') / 'data' / 'ISD-LITE' / 'data'
+isdlite_history_file = Path(isdlite_data_dir) / 'isd-history.txt'
 
-# Open ISDLite "history" (station metadata) file
-isdlite_history_file = isdlite_data_dir / 'isd-history.txt'
+# ncei.download_file(isd_lite_stations_url,isdlite_history_file, refresh = True, verbose = True)
+
+ncei.download_stations(isdlite_history_file)
 
 # Create stations object
 ISD_stations = stations.Stations.from_file(isdlite_history_file)
@@ -325,13 +278,15 @@ title = (
     + ' - '
     + end_date.isoformat()
     + '\n'
-    + 'ISD stations: National Centers for Environmental Information (NCEI), https://www.ncei.noaa.gov (accessed 2025-08-15)\n'
-    'RTO/ISO regions: https://atlas.eia.gov/datasets/rto-regions (accessed 2025-08-26)'
+    + 'ISD stations: National Centers for Environmental Information (NCEI), https://www.ncei.noaa.gov (accessed '
+    + datetime.today().date().strftime("%Y-%m-%d")
+    + ')\n'
+    'RTO/ISO regions: https://atlas.eia.gov/datasets/rto-regions'
 )
 
 title_object = ax.set_title(title, fontsize=12)
 
-plot_path = Path('..') / 'data' / 'RTO_ISO_regions_ISD_stations' / 'RTO_ISO_regions_ISD_stations_map.png'
+plot_path = isdlite_data_dir / 'plots' / 'RTO_ISO_regions_ISD_stations_map.png'
 
 plot_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -343,8 +298,6 @@ path = fig.savefig(plot_path, bbox_inches="tight", dpi=600)
 
 # Directory where the ISD station history files for the RTO/ISO regions are located,
 # and where the netCDF files with the ISDLite observations for these regions will be saved
-
-rto_iso_isdlite_data_dir = Path('..') / 'data' / 'RTO_ISO_regions_ISD_stations'
 
 for region in regions:
     # Load stations in the region for the period of interest
@@ -364,14 +317,14 @@ for region in regions:
         end_date.year,
         region_stations.id(),
         isdlite_data_dir,
-        n_jobs=32,
+        n_jobs=n_jobs,
         refresh=False,
         verbose=True,
     )
 
     # Load the observations from the local files
 
-    region_stations.load_observations(isdlite_data_dir, start_year, end_year, verbose=True)
+    region_stations.load_observations(isdlite_data_dir, start_date.year, end_date.year, verbose=True)
 
     # Set region global attribute
 
@@ -381,6 +334,6 @@ for region in regions:
 
     nc_file_name = region + '.' + str(start_date.year) + '-' + str(end_date.year) + '_ISD_Lite_observations.nc'
 
-    nc_file_path = rto_iso_isdlite_data_dir / nc_file_name
+    nc_file_path = isdlite_data_dir / nc_file_name
 
     region_stations.write_observations2netcdf(nc_file_path)

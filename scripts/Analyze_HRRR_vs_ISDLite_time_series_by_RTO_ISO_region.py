@@ -1,55 +1,7 @@
 #!/usr/bin/env python
 
-'''
-Analyze HRRR forecasts versus ISDLite observations by RTO/ISO region.
-
-This script compares 2-D HRRR forecast fields against ISDLite point
-observations across specified U.S. RTO/ISO regions (ERCOT, CAISO, SPP, etc.).
-For each region and forecast time, the script:
-
-1. Loads the polygonal region geometry from a GeoJSON file.
-2. Loads ISDLite observations for stations in that region from a NetCDF file.
-   - Converts observation units to Kelvin if stored in Celsius/degC.
-3. Iterates through daily HRRR forecasts for the analysis period:
-   - Constructs the HRRR file path based on initialization time and lead time.
-   - Opens the HRRR dataset and checks units against ISDLite observations.
-   - Converts HRRR variable to Kelvin if needed.
-   - Computes HRRR-only regional statistics (mean, std, variance) over the region
-     using Model2DRegionalStatisticsTimeSeries.
-   - Computes HRRR vs ISDLite statistics (bias, RMSE, correlation, coverage) at
-     station locations using ModelVsObs2DStatisticsTimeSeries.
-   - Extends the accumulating time series containers with results for each forecast.
-   - Closes the HRRR dataset before proceeding to the next day.
-4. After looping through all forecasts, converts accumulated results into pandas
-   DataFrames for both HRRR-only and HRRR-vs-ISDLite statistics.
-5. Produces plots of all statistics versus time using plotting.plot_df_timeseries,
-   saving one figure per statistic in a region-specific directory under ../plots/.
-6. Saves the statistics time series as netCDF files '../data/RTO_ISO_regions_timeseries.
-
-Configuration
--------------
-
-- Forecast lead time and forecast hour are set near the top of the script
-- Analysis period is controlled by start_time and end_time.
-- HRRR input files are expected under ../data/HRRR/data/YYYYMMDD/conus/
-  with filenames of the form
-    hrrr.t{HH}z.wrfsfcf{LL}_select_vars.nc
-  where HH = initialization hour, LL = lead time in hours.
-- ISDLite input files are expected under
-  ../data/RTO_ISO_regions_ISD_stations/{REGION}.{YEARS}_ISD_Lite_observations.nc
-- Region geometries are read from ../data/RTO_ISO_regions.geojson.
-
-Outputs
--------
-
-- dfs_hrrr_regional_statistics: list of pandas.DataFrame objects with HRRR-only
-  regional statistics for each region.
-- dfs_hrrr_vs_isdlite_statistics: list of pandas.DataFrame objects with HRRR vs
-  ISDLite evaluation metrics for each region.
-- Plots: PNG files saved under ../plots/<region_names_combined>/, one per statistic,
-  showing timeseries overlays across the analyzed regions.
-'''
-
+import argparse
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -59,24 +11,82 @@ from isd_lite_data import stations
 from arotake import plotting, rto_iso, statistics
 
 #
-# Keep attributes of xarray Datasets upon numerical operations (otherwise they are lost)
+# Settings
 #
+
+# Keep attributes of xarray Datasets upon numerical operations (otherwise they are lost)
 
 xr.set_options(keep_attrs=True)
 
 #
-# HRRR forecast time parameters
+# Command line arguments
 #
 
-forecast_hour = 20
-forecast_lead_time_hours = 32
 
-#
-# Period to analyze
-#
+def arg_parse(argv=None):
+    '''
+    Argument parser which returns the parsed values given as arguments.
+    '''
 
-start_time = datetime(2020, 12, 3, forecast_hour, 0, 0, tzinfo=timezone.utc)
-end_time = datetime(2021, 12, 31, forecast_hour, 0, 0, tzinfo=timezone.utc)
+    code_description = (
+        'Compute HRRR versus ISD-Lite temperature statistics over U.S. RTO/ISO regions. '
+        'Given a start and end date, an HRRR initialization hour and forecast lead time, and paths to the region GeoJSON, '
+        'ISD-Lite data, HRRR data, and an output directory, the script loads region geometries, forecast data, '
+        'and observations, and computes regional aggregates and model-versus-observation diagnostics, writes results'
+        'to NetCDF, and produces timeseries plots.'
+    )
+
+    parser = argparse.ArgumentParser(description=code_description)
+
+    # Mandatory arguments
+    parser.add_argument('start_year', type=int, help='Start year of time range.')
+    parser.add_argument('start_month', type=int, help='Start month of time range.')
+    parser.add_argument('start_day', type=int, help='Start day of time range.')
+    parser.add_argument('end_year', type=int, help='End year of time range.')
+    parser.add_argument('end_month', type=int, help='End month of time range.')
+    parser.add_argument('end_day', type=int, help='End day of time range.')
+    parser.add_argument('forecast_init_hour', type=int, help='HRRR forecast initialization hour.')
+    parser.add_argument('forecast_lead_hour', type=int, help='HRRR forecast lead time in hours.')
+    parser.add_argument(
+        'path_to_geojson',
+        type=str,
+        help='Path to RTO/ISO geometries file (available from https://atlas.eia.gov/datasets/rto-regions)',
+    )
+    parser.add_argument('isdlite_data_dir', type=str, help='Directory where ISDLite data are located.')
+    parser.add_argument('hrrr_data_dir', type=str, help='Directory where HRRR data are located.')
+    parser.add_argument(
+        'out_dir', type=str, help='Directory where results will be saved. Will be created if it does not exist.'
+    )
+
+    # Optional arguments
+    # parser.add_argument('-x','--xxx', type=str, help='HELP STRING HERE')
+
+    args = parser.parse_args()
+
+    start_date = datetime(year=args.start_year, month=args.start_month, day=args.start_day, tzinfo=timezone.utc)
+    end_date = datetime(year=args.end_year, month=args.end_month, day=args.end_day, tzinfo=timezone.utc)
+    forecast_init_hour = args.forecast_init_hour
+    forecast_lead_hour = args.forecast_lead_hour
+    path_to_geojson = Path(args.path_to_geojson)
+    isdlite_data_dir = Path(args.isdlite_data_dir)
+    hrrr_data_dir = Path(args.hrrr_data_dir)
+    out_dir = Path(args.out_dir)
+
+    return (
+        start_date,
+        end_date,
+        forecast_init_hour,
+        forecast_lead_hour,
+        path_to_geojson,
+        isdlite_data_dir,
+        hrrr_data_dir,
+        out_dir,
+    )
+
+
+(start_date, end_date, forecast_init_hour, forecast_lead_hour, path_to_geojson, isdlite_data_dir, hrrr_data_dir, out_dir) = (
+    arg_parse(sys.argv[1:])
+)
 
 #
 # Variables to compare
@@ -102,17 +112,15 @@ dfs_hrrr_vs_isdlite_statistics = []
 region_name_last = None
 
 for region_name in region_names:
-    # Obtain RTO/ISO region geometry
-
-    path_to_geojson = Path('') / '..' / 'data' / 'RTO_ISO_regions.geojson'
+    # Read RTO/ISO region geometry
 
     region_gdf = rto_iso.region(path_to_geojson, region_name)
 
-    # ISDLite observations
+    # Load ISDLite observations
 
-    isdlite_file_name = region_name + '.2020-2025_ISD_Lite_observations.nc'
+    isdlite_file_name = region_name + '.' + str(start_date.year) + '-' + str(end_date.year) + '_ISD_Lite_observations.nc'
 
-    isdlite_file = Path('..') / 'data' / 'RTO_ISO_regions_ISD_stations' / isdlite_file_name
+    isdlite_file = isdlite_data_dir / isdlite_file_name
 
     isdlite_stations = stations.Stations.from_netcdf(isdlite_file)
 
@@ -124,21 +132,9 @@ for region_name in region_names:
         isdlite_stations.observations[isdlite_variable].attrs['units'] = 'K'
         isdlite_data_units = 'K'
 
-    # Station names
-    # isd_station_names = isdlite_stations.observations.data_vars['STATION_NAME'].values
-    # isd_station_isd = isdlite_stations.observations.data_vars['STATION_ID'].values
-
     #
     # Loop over HRRR forecasts
     #
-
-    # HRRR forecast timing
-
-    forecast_lead_time_delta = timedelta(hours=forecast_lead_time_hours)
-
-    time_step = timedelta(days=1)
-
-    forecast_time = start_time
 
     # Initialize empty HRRR regional statistics object
 
@@ -148,34 +144,54 @@ for region_name in region_names:
 
     hrrr_vs_isdlite_statistics = statistics.ModelVsObs2DStatisticsTimeSeries(None, None, None, None, None, None, None, None)
 
-    while forecast_time <= end_time:
-        print(region_name + ' region, forecast time ' + str(forecast_time))
+    # Timing
+
+    forecast_init_time_delta = timedelta(hours=forecast_init_hour)
+    forecast_lead_time_delta = timedelta(hours=forecast_lead_hour)
+
+    # Loop variable
+
+    forecast_creation_date = start_date
+
+    # Loop increment
+
+    time_step = timedelta(days=1)
+
+    while forecast_creation_date <= end_date:
+        # Forecast initilization time
+        forecast_init_time = forecast_creation_date + forecast_init_time_delta
+
+        # Forecast valid time
+        forecast_valid_time = forecast_creation_date + forecast_init_time_delta + forecast_lead_time_delta
+
+        print(
+            region_name
+            + ' region, forecast init time '
+            + str(forecast_init_time)
+            + ' , forecast valid time '
+            + str(forecast_valid_time)
+        )
 
         #
         # HRRR data
         #
 
-        # Forecast initilization time
-        forecast_init_time = forecast_time - forecast_lead_time_delta
-
         # Construct path of HRRR file (in HRRR data directory)
-        hrrr_data_dir = Path('..') / 'data' / 'HRRR' / 'data'
+
         hrrr_dir_name = (
             'hrrr.'
             + str(forecast_init_time.year).zfill(4)
             + str(forecast_init_time.month).zfill(2)
             + str(forecast_init_time.day).zfill(2)
         )
+
         hrrr_file_name = (
-            'hrrr.t'
-            + str(forecast_init_time.hour).zfill(2)
-            + 'z.wrfsfcf'
-            + str(forecast_lead_time_hours).zfill(2)
-            + '_select_vars.nc'
+            'hrrr.t' + str(forecast_init_hour).zfill(2) + 'z.wrfsfcf' + str(forecast_lead_hour).zfill(2) + '_select_vars.nc'
         )
+
         hrrr_file = hrrr_data_dir / hrrr_dir_name / 'conus' / hrrr_file_name
 
-        # Open HRRR file
+        # Open HRRR file and load data
         hrrr_ds = xr.open_dataset(hrrr_file)
 
         # Units
@@ -227,15 +243,14 @@ for region_name in region_names:
 
         hrrr_ds.close()
 
-        # Iterate forecast time
+        # Iterate date
 
-        forecast_time += time_step
+        forecast_creation_date += time_step
 
     # Save results
 
-    data_dir = Path('..') / 'data' / 'RTO_ISO_regions_timeseries'
-    hrrr_regional_statistics.write_ds2netcdf(hrrr_regional_statistics.DataSet(), data_dir)
-    hrrr_vs_isdlite_statistics.write_ds2netcdf(hrrr_vs_isdlite_statistics.DataSet(), data_dir)
+    hrrr_regional_statistics.write_ds2netcdf(hrrr_regional_statistics.DataSet(), out_dir)
+    hrrr_vs_isdlite_statistics.write_ds2netcdf(hrrr_vs_isdlite_statistics.DataSet(), out_dir)
 
     # Construct/append dataframes
 
@@ -249,16 +264,16 @@ for region_name in region_names:
 # Each RTO/ISO individually (one region per plot)
 
 for region_name, df in zip(region_names, dfs_hrrr_regional_statistics, strict=False):
-    plot_dir = Path('..') / 'plots' / region_name
+    plot_dir = out_dir / 'plots' / region_name
 
     plot_file_paths = plotting.plot_df_timeseries(plot_dir, [df], [region_name])
 
 for region_name, df in zip(region_names, dfs_hrrr_vs_isdlite_statistics, strict=False):
-    plot_dir = Path('..') / 'plots' / region_name
+    plot_dir = out_dir / 'plots' / region_name
 
     plot_file_paths = plotting.plot_df_timeseries(plot_dir, [df], [region_name])
 
-plot_dir = Path('..') / 'plots' / '_'.join(region_names)
+plot_dir = out_dir / 'plots' / '_'.join(region_names)
 
 # All RTO/ISO together (all regions per plot)
 

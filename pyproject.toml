@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arotake"
-version = "1.0.0rc1"
+version = "1.0.0rc2"
 description = "Short description"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,7 +21,7 @@ dependencies = [
   "shapely>=2.1.1",
   "xarray>=2025.8.0",
   "xesmf>=0.8.10; python_version < '3.13'",
-  "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data@v2.0.2"
+  "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data"
 ]
 
 [project.optional-dependencies]
@@ -31,6 +31,12 @@ dev = [
   "mypy>=1.11",
   "ruff>=0.5",
   "pre-commit>=3.7",
+]
+
+[tool.setuptools]
+script-files = [
+  "scripts/Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py",
+  "scripts/Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py",
 ]
 
 [tool.setuptools.packages.find]
