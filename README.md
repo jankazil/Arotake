@@ -12,7 +12,7 @@ conda activate arotake
 
 ## Overview
 
-The toolkit provides analysis scripts for working with NOAA ISD-Lite surface observations and NOAA HRRR surface forecasts, organized by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions.
+The toolkit provides analysis scripts for working with NOAA ISD-Lite surface observations and NOAA HRRR contiguous United States surface forecasts, organized by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions.
 
 - **Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py**  
   Downloads ISD-Lite station metadata, filters stations by location and data availability, assigns stations to RTO/ISO regions, generates a regional station map, downloads the observations (optionally in parallel), and saves region-specific NetCDF files with observations. This needs to be done only once for the given time range.
