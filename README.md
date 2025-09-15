@@ -15,15 +15,15 @@ conda activate arotake
 The toolkit provides analysis scripts for working with NOAA HRRR contiguous United States surface forecasts and NOAA ISD-Lite surface observations, organized by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions:
 
 - **Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py**  
-  Downloads ISD-Lite station metadata, filters stations by location and data availability, assigns stations to RTO/ISO regions, generates a regional station map, downloads the observations (optionally in parallel), and saves region-specific NetCDF files with observations. This needs to be done only once for the given time range.
+  Downloads ISD-Lite station metadata, filters stations by location and data availability, assigns stations to RTO/ISO regions, generates a regional station map, downloads the observations (optionally in parallel), and saves region-specific NetCDF files with observations. This needs to be done only once per time range.
 
 - **Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py**  
   Loads region-specific ISD-Lite observation NetCDF files and HRRR forecast files, computes regional HRRR-only statistics and HRRR-vs-observation diagnostics, saves results as NetCDF time series, and generates plots of the statistics for each region.
 
 The workflow is
 
-1. Download HRRR contiguous United States surface forecast data, only once for a given time range
-2. Download and construct RTO/ISO region ISD-Lite datasets, only once for a given time range
+1. Download HRRR contiguous United States surface forecast data (once per time range)
+2. Download and construct RTO/ISO region ISD-Lite datasets (once per time range)
 3. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
 
 ## Workflow
