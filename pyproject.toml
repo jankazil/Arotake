@@ -15,16 +15,15 @@ dependencies = [
   "cartopy>=0.25.0",
   "geopandas>=1.1.1",
   "matplotlib>=3.10.6",
-  "numpy>=2.0; python_version >= '3.13'",          # free on 3.13 since xesmf won’t install
-  "numpy>=2.0,<2.2; python_version < '3.13'",       # keep numba happy on 3.12
+  "numpy>=2.0,<2.2",            # keep numba 0.60.0 happy
   "pandas>=2.3.2",
   "regionmask>=0.13.0",
   "scipy>=1.16.1",
   "Shapely>=2.1.1",
   "xarray>=2025.8.0",
-  "xesmf>=0.8.10; python_version < '3.13'",
-  "numba==0.60.0; python_version < '3.13'",
-  "llvmlite==0.43.0; python_version < '3.13'",
+  "xesmf>=0.8.10",              # requires numba/llvmlite
+  "numba==0.60.0",
+  "llvmlite==0.43.0",
   "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data",
 ]
 

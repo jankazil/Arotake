@@ -12,18 +12,29 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.10', '3.11', '3.12']
-#        python-version: ['3.x'] # Use latest 3.x version
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"
-      - name: Install
+          cache: pip
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install project
+        run: pip install -e ".[dev]"
+      - name: Show critical versions
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          python -V
+          python - << 'PY'
+          import importlib
+          for pkg in ("numpy","numba","llvmlite","xesmf","xarray"):
+              try:
+                  m = importlib.import_module(pkg)
+                  print(f"{pkg} {getattr(m,'__version__','n/a')}")
+              except Exception as e:
+                  print(f"{pkg} NOT INSTALLED: {e}")
+          PY
       - name: Lint (ruff)
         run: python -m ruff check .
       - name: Test (pytest)
