@@ -32,9 +32,9 @@ The workflow is
 
 ## 1. Data Preparation
 
-- The definitions of the RTO/ISO regions in GEOJson format can be downloaded from https://atlas.eia.gov/datasets/rto-regions.
+- Download the definitions of the RTO/ISO regions in GEOJson format from https://atlas.eia.gov/datasets/rto-regions.
 
-- The HRRR surface forecast data for the contiguous United States, the time period, forecast initialization time, and forecast lead time can be downloaded and converted to netCDF files with the [HRRR-data](https://github.com/jankazil/hrrr-data) toolkit.
+- Download the HRRR surface forecast data for the contiguous United States, a given time period, forecast initialization time, and forecast lead time, and convert them to netCDF files with the [HRRR-data](https://github.com/jankazil/hrrr-data) toolkit.
     - Use the script    [DownloadHRRRSurfaceForecast.py](https://github.com/jankazil/hrrr-data/blob/main/scripts/DownloadHRRRSurfaceForecast.py) to download HRRR surface forecast files in GRIB format for a given time range from the Amazon S3 HRRR bucket, which also extracts select variables into netCDF files:
 
         hrrr.<YYYYMMDD\>/conus/hrrr.t<II\>z.wrfsfcf<FF\>_select_vars.nc
