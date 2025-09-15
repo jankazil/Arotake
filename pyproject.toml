@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arotake"
-version = "1.0.0rc3"
+version = "1.0.0"
 description = "Short description"
 readme = "README.md"
 requires-python = ">=3.13"
