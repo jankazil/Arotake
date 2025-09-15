@@ -81,7 +81,7 @@ This will:
 - Load RTO/ISO region geometries and ISD-Lite observations.
 - Load HRRR forecasts for the specified initialization/lead hours.
 - Compute and save time series of HRRR regional statistics and of HRRR vs ISD-Lite observation statistics.
-- Generate plots of the time series per region in `./results/plots/<region>/`.
+- Generate plots of the time series per region.
 
 ## Public API
 
