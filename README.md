@@ -30,8 +30,6 @@ The workflow is
 
 ## Workflow
 
-The scripts accept on the command line arguments specifying the time range, input file locations, and output directories.
-
 ## 1. Data Preparation
 
 - The definitions of the RTO/ISO regions in GEOJson format can be downloaded from https://atlas.eia.gov/datasets/rto-regions.
