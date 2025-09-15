@@ -7,7 +7,7 @@ name = "arotake"
 version = "1.0.0rc3"
 description = "Short description"
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.13"
 license = { file = "LICENSE" }
 authors = [{ name = "Jan Kazil" }]
 
@@ -15,14 +15,14 @@ dependencies = [
   "cartopy>=0.25.0",
   "geopandas>=1.1.1",
   "matplotlib>=3.10.6",
-  "numpy>=2.0,<2.2",
+  "numpy>=2.0",
   "pandas>=2.3.2",
   "regionmask>=0.13.0",
   "scipy>=1.16.1",
   "Shapely>=2.1.1",
   "xarray>=2025.8.0",
-  "numba==0.60.0",
-  "llvmlite==0.43.0",
+  "numba>=0.60.0",
+  "llvmlite>=0.43.0",
   "xesmf>=0.8.10",
   "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data",
 ]
@@ -64,7 +64,7 @@ quote-style = "preserve"
 # do no reflect actual runtime issues.
 #
 #[tool.mypy]
-#python_version = "3.10"
+##python_version = "3.13"
 #warn_unused_configs = true
 #disallow_untyped_defs = true
 #disallow_incomplete_defs = true
