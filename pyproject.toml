@@ -21,7 +21,7 @@ dependencies = [
   "scipy>=1.16.1",
   "Shapely>=2.1.1",
   "xarray>=2025.8.0",
-  "xesmf>=0.8.10; python_version < '3.13'",
+  "xesmf>=0.8.10",
   "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data"
 ]
 
