@@ -56,9 +56,11 @@ This will:
 - Load RTO/ISO region geometries.
 - Download and filter ISD-Lite station metadata.  
 - Assign stations to RTO/ISO regions and save station lists.  
-- Plot a map of the ISD stations in each region (`ISD_stations_map.png`).  
 - Download observations (parallelized if `-n` > 1).  
 - Save region-specific NetCDF files with the observations.  
+- Plot a map of the ISD stations in each region:  
+
+![ISD stations reporting in 2021](docs/RTO_ISO_regions_2021_ISD_stations_map.png)
 
 ## 3. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
 
