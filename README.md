@@ -83,7 +83,9 @@ This will:
 - Load RTO/ISO region geometries and ISD-Lite observations.
 - Load HRRR forecasts for the specified initialization/lead hours.
 - Compute and save time series of HRRR regional statistics and of HRRR vs ISD-Lite observation statistics.
-- Generate plots of the time series per region.
+- Generate plots of the time series per region, e.g.:
+
+![HRRR vs ISD Lite 2 m temperature bias at stations reporting in 2021](docs/2021-01-01-2021-12-31.model_vs_obs_bias_at_obs_locs.png)
 
 ## Public API
 
