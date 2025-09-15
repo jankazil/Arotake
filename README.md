@@ -2,9 +2,13 @@
 
 **Arotake** is a Python toolkit for evaluating meteorological forecast models against observations. It currently offers a comparison of select NOAA HRRR surface forecast variables with NCEI ISD-Lite surface observations, stratified by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions.
 
-## Installation
+## Installation (Linux / macOS)
 
-pip install git+https://github.com/jankazil/Arotake
+```bash
+wget -O environment.yml https://raw.githubusercontent.com/jankazil/Arotake/main/environment.yml  
+mamba env create -f environment.yml  
+conda activate arotake
+```
 
 ## Overview
 
@@ -22,12 +26,14 @@ The scripts accept on the command line arguments specifying the time range, inpu
 
 ### 1. Construct RTO/ISO region ISD-Lite Datasets
 
-```Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <geojson_file> <isdlite_data_dir> [-n <n_jobs>]
+```bash
+Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <geojson_file> <isdlite_data_dir> [-n <n_jobs>]
 ```
 
 Example:
 
-```Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py 2021 1 1 2021 12 31 data/RTO_ISO_regions.geojson data/ISD-LITE/ -n 8
+```bash
+Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py 2021 1 1 2021 12 31 data/RTO_ISO_regions.geojson data/ISD-LITE/ -n 8
 ```
 
 This will:  
@@ -41,16 +47,18 @@ This will:
 
 ### 2. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
 
-```Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <forecast_init_hour> <forecast_lead_hour> <geojson_file> <isdlite_data_dir> <hrrr_data_dir> <out_dir>
+```bash
+Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <forecast_init_hour> <forecast_lead_hour> <geojson_file> <isdlite_data_dir> <hrrr_data_dir> <out_dir>
 ```
 
-```<hrrr_data_dir>``` is the parent directory of the HRRR data directory, which has the following structure (see Section ''Data Preparation''):  
+<hrrr_data_dir\> is the parent directory of the HRRR data directory, which has the following structure (see Section ''Data Preparation''):  
 
 ```hrrr.<YYYYMMDD\>/conus/hrrr.t<II\>z.wrfsfcf<FF\>_select_vars.nc```
 
 Example:
 
-```Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py 2021 1 1 2021 12 30 12 6 data/RTO_ISO_regions.geojson data/ISD-LITE/ data/HRRR/ results/
+```bash
+Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py 2021 1 1 2021 12 30 12 6 data/RTO_ISO_regions.geojson data/ISD-LITE/ data/HRRR/ results/
 ```
 
 This will:  
@@ -100,6 +108,10 @@ This will:
 - `make check` – Runs both formatting and linting.
 - `make type` – Runs `mypy` type checker in strict mode.
 - `make test` – Runs `pytest` with coverage reporting.
+
+### Notes
+
+Arotake uses [xESMF](https://xesmf.readthedocs.io]) (Universal Regridder for Geospatial Data), which uses [ESMPy](https://earthsystemmodeling.org/esmpy) (ESMF Python Regridding Interface) as backend. These packages are as of writing available as conda packages from conda-forge. This necessitates installing a conda environment to operate Arotake.
 
 ## Name
 

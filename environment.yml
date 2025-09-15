@@ -1,0 +1,33 @@
+name: arotake
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - pip
+  - cartopy
+  - cmcrameri
+  - esmf
+  - esmpy
+  - fiona
+  - gdal
+  - geopandas
+  - geopy
+  - git
+  - jdcal
+  - mamba
+  - matplotlib
+  - mypy
+  - netcdf4
+  - numba
+  - numpy
+  - pandas
+  - proj
+  - proj-data
+  - regionmask
+  - scipy
+  - shapely
+  - xarray
+  - xesmf
+  - pip:
+      - git+https://github.com/jankazil/isd-lite-data
+      - git+https://github.com/jankazil/Arotake

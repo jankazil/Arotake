@@ -19,10 +19,9 @@ dependencies = [
   "pandas>=2.3.2",
   "regionmask>=0.13.0",
   "scipy>=1.16.1",
-  "Shapely>=2.1.1",
+  "shapely>=2.1.1",
   "xarray>=2025.8.0",
   "numba>=0.60.0",
-  "llvmlite>=0.43.0",
   "xesmf>=0.8.10",
   "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data",
 ]
