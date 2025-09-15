@@ -22,36 +22,36 @@ The toolkit provides analysis scripts for working with NOAA ISD-Lite surface obs
 
 The workflow is
 
-1. Data preparation:
-   - Download RTO/ISO regions in GEOJson format, only once
-   - Download HRRR contiguous United States surface forecast data, only once for a given time range
-2. Download and construct RTO/ISO region ISD-Lite Datasets, only once for a given time range
+1. Download HRRR contiguous United States surface forecast data, only once for a given time range
+2. Download and construct RTO/ISO region ISD-Lite datasets, only once for a given time range
 3. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
 
 ## Workflow
 
-## 1. Data Preparation
-
-- Download the definitions of the RTO/ISO regions in GEOJson format from https://atlas.eia.gov/datasets/rto-regions.
+## 1. Download HRRR surface forecast data
 
 - Download the HRRR surface forecast data for the contiguous United States, a given time period, forecast initialization time, and forecast lead time, and convert them to netCDF files with the [HRRR-data](https://github.com/jankazil/hrrr-data) toolkit:
     - Use the script    [DownloadHRRRSurfaceForecast.py](https://github.com/jankazil/hrrr-data/blob/main/scripts/DownloadHRRRSurfaceForecast.py) to download HRRR surface forecast files in GRIB format for a given time range from the Amazon S3 HRRR bucket, which also extracts select variables into netCDF files into a directory tree as follows:
 
         hrrr.<YYYYMMDD\>/conus/hrrr.t<II\>z.wrfsfcf<FF\>_select_vars.nc
 
-## 2. Construct RTO/ISO region ISD-Lite Datasets
+## 2. Construct RTO/ISO region ISD-Lite datasets
+
+**Call**
 
 ```bash
 Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <geojson_file> <isdlite_data_dir> [-n <n_jobs>]
 ```
 
-Example:
+(The definitions of the RTO/ISO regions in GEOJson format are provided with this distribution in the file data/RTO_ISO_regions.geojson, source: U.S. Energy Information Administration)Information Administration)
+
+**Example**
 
 ```bash
 Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py 2021 1 1 2021 12 31 data/RTO_ISO_regions.geojson data/ISD-LITE/ -n 8
 ```
 
-This will:  
+**This will:**
 
 - Load RTO/ISO region geometries.
 - Download and filter ISD-Lite station metadata.  
@@ -64,21 +64,25 @@ This will:
 
 ## 3. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
 
+**Call**
+
 ```bash
 Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <forecast_init_hour> <forecast_lead_hour> <geojson_file> <isdlite_data_dir> <hrrr_data_dir> <out_dir>
 ```
 
-<hrrr_data_dir\> is the parent directory of a data directory tree which contains the HRRR netCDF files as follows (see Section ''Data Preparation''):  
+<hrrr_data_dir\> is the parent directory of a data directory tree which contains the HRRR netCDF files as follows (see Section 1):  
 
 hrrr.<YYYYMMDD\>/conus/hrrr.t<II\>z.wrfsfcf<FF\>_select_vars.nc
 
-Example:
+(The definitions of the RTO/ISO regions in GEOJson format are provided with this distribution in the file data/RTO_ISO_regions.geojson, source: U.S. Energy Information Administration)
+
+**Example**
 
 ```bash
 Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py 2021 1 1 2021 12 30 12 6 data/RTO_ISO_regions.geojson data/ISD-LITE/ data/HRRR/ results/
 ```
 
-This will:  
+**This will:**
 
 - Load RTO/ISO region geometries and ISD-Lite observations.
 - Load HRRR forecasts for the specified initialization/lead hours.
