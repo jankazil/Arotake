@@ -1,6 +1,12 @@
 # Arotake
 
-**Arotake** is a Python toolkit for evaluating meteorological forecast models against observations. It currently offers a comparison of select NOAA HRRR contiguous United States surface forecast variables with NCEI ISD-Lite surface observations, stratified by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions.
+**Arotake** is a Python toolkit for evaluating meteorological forecast models against observations. It provides modules for
+
+- Interpolation of model forecast data to observation locations
+- Calculation and visualizatoin of time series characterizing forecast vs. observations statistics
+- Definition of Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions
+
+and top level scripts for evaluation of NOAA HRRR forecasts against NCEI ISD-Lite surface observations, stratified by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions.
 
 ## Installation (Linux / macOS)
 
@@ -12,7 +18,7 @@ conda activate arotake
 
 ## Overview
 
-The toolkit provides analysis scripts for working with NOAA HRRR contiguous United States surface forecasts and NOAA ISD-Lite surface observations, organized by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions:
+The toolkit provides top level scripts for working with NOAA HRRR contiguous United States surface forecasts and NOAA ISD-Lite surface observations, organized by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions:
 
 - **Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py**  
   Downloads ISD-Lite station metadata, filters stations by location and data availability, assigns stations to RTO/ISO regions, generates a regional station map, downloads the observations (optionally in parallel), and saves region-specific NetCDF files with observations. This needs to be done only once per time range.
