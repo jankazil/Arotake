@@ -4,27 +4,28 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arotake"
-version = "1.0.6"
+version = "2.0.0"
 description = "Arotake is a Python toolkit for evaluating meteorological forecast models against observations."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Jan Kazil" }]
-
 dependencies = [
-  "cartopy>=0.25.0",
-  "geopandas>=1.1.1",
-  "matplotlib>=3.10.6",
-  "numpy>=2.0",
-  "pandas>=2.3.2",
-  "regionmask>=0.13.0",
-  "scipy>=1.16.1",
-  "shapely>=2.1.1",
-  "xarray>=2025.8.0",
-  "numba>=0.60.0",
-  "xesmf>=0.8.10",
-  "isd-lite-data @ git+https://github.com/jankazil/isd-lite-data",
+  "cartopy",
+  "geopandas",
+  "matplotlib",
+  "numpy",
+  "pandas",
+  "regionmask",
+  "scipy",
+  "shapely",
+  "xarray",
+  "numba",
+  "xesmf",
 ]
+
+[project.scripts]
+analyze-hrrr-vs-observations = "arotake.analyze_hrrr_vs_observations:main" # Connects name of executable in $PATH to the python module containing main()
 
 [project.optional-dependencies]
 dev = [
@@ -33,12 +34,6 @@ dev = [
   "mypy>=1.11",
   "ruff>=0.5",
   "pre-commit>=3.7",
-]
-
-[tool.setuptools]
-script-files = [
-  "scripts/Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py",
-  "scripts/Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py",
 ]
 
 [tool.setuptools.packages.find]
@@ -63,7 +58,7 @@ quote-style = "preserve"
 # do no reflect actual runtime issues.
 #
 #[tool.mypy]
-##python_version = "3.13"
+##python_version = "3.11"
 #warn_unused_configs = true
 #disallow_untyped_defs = true
 #disallow_incomplete_defs = true

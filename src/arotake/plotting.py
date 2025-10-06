@@ -17,9 +17,15 @@ Assumptions shared by callers:
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import pandas.api.types as ptypes
+from cartopy.mpl.ticker import LatitudeFormatter, LatitudeLocator, LongitudeFormatter, LongitudeLocator
+
+matplotlib.use("Agg")  # Important to avoid runaway memory use upon creating plots repeatedly.
 
 
 def plot_df_timeseries(plot_dir: Path, dfs: list[pd.DataFrame], legend_strings: list[str] = None) -> list[Path]:
@@ -264,3 +270,126 @@ def pandas_series_plottable(col: pd.Series) -> bool:
         return False
 
     return False
+
+
+def plot_locations_conus(
+    data_obs: object, start_date: datetime, end_date: datetime, obs_lat_name: str, obs_lon_name: str, plot_dir: Path
+) -> Path:
+    '''
+    Creates and saves a map of observation station locations within the
+    contiguous United States (CONUS) using a Lambert Conformal projection.
+
+    The function plots the spatial distribution of observation stations contained
+    in an xarray Dataset accessible through `data_obs.time_series`, overlaying
+    them on a map with coastlines, state borders, and gridlines. The map extent
+    covers the continental United States, and the resulting figure is saved as
+    a high-resolution PNG file.
+
+    Args:
+        data_obs (object): Object containing a `.time_series` xarray Dataset with
+            station observation data. The dataset must include attributes
+            `'long_name'`, `'region'`, and `'name'`, as well as coordinate
+            variables for station latitude and longitude.
+        start_date (datetime): Start date of the observation period to display
+            in the plot title.
+        end_date (datetime): End date of the observation period to display
+            in the plot title.
+        obs_lat_name (str): Name of the latitude variable in `data_obs.time_series`.
+        obs_lon_name (str): Name of the longitude variable in `data_obs.time_series`.
+        plot_dir (Path): Directory in which to save the generated plot image.
+            The directory will be created if it does not already exist.
+
+    Returns:
+        Path: Full path to the saved plot image file.
+
+    Notes:
+        - The map projection used is Lambert Conformal Conic, consistent with
+          the HRRR model domain.
+        - The output image is saved with a resolution of 600 DPI and includes
+          labeled longitude and latitude gridlines.
+        - The filename is constructed from the dataset’s `'name'` and `'region'`
+          attributes, ending with `'_stations_map.png'`.
+    '''
+
+    # Define the target map projection (Lambert Conformal as in HRRR)
+    hrrr_proj = ccrs.LambertConformal(
+        central_longitude=-97.5,
+        central_latitude=38.5,
+        standard_parallels=(38.5, 38.5),
+    )
+
+    # Crate plot - here, passing a Cartopy projection will make 'ax' being a cartopy.mpl.geoaxes.GeoAxes object, and Cartopy methods can be used with 'ax'
+
+    fig, ax = plt.subplots(figsize=(18, 9), subplot_kw={"projection": hrrr_proj})
+
+    # Set the map extent (using the PlateCarree coordinate reference system which just means lon/lat)
+    ax.set_extent([-123, -71, 25, 50], crs=ccrs.PlateCarree())
+
+    # Coastlines, national borders, state lines
+
+    ax.coastlines(resolution="50m", linewidth=0.5)
+    ax.add_feature(cfeature.BORDERS, linewidth=0.25)
+    ax.add_feature(cfeature.STATES, linewidth=0.25)
+
+    # Draw locations
+
+    ax.plot(
+        data_obs.time_series[obs_lon_name],
+        data_obs.time_series[obs_lat_name],
+        'o',
+        markersize=2,
+        color='red',
+        transform=ccrs.PlateCarree(),  # tell Cartopy these are lat/lon coords
+    )
+
+    # Coordinate gridlines
+
+    gl = ax.gridlines(draw_labels=True, linewidth=0.5, color='black', alpha=1.0, linestyle='--')
+
+    # Grid labels on the axes (not inline on the map)
+
+    gl.x_inline = False
+    gl.y_inline = False
+    gl.bottom_labels = True
+    gl.left_labels = True
+    gl.top_labels = False
+    gl.right_labels = False
+
+    # Choose where lines go
+
+    gl.xlocator = LongitudeLocator(nbins=6)
+    gl.ylocator = LatitudeLocator(nbins=6)
+
+    # Nice degree formatting
+
+    gl.xformatter = LongitudeFormatter(number_format='.0f', degree_symbol='°')
+    gl.yformatter = LatitudeFormatter(number_format='.0f', degree_symbol='°')
+
+    # Force horizontal labels
+
+    gl.xlabel_style = {'rotation': 0, 'ha': 'center', 'va': 'top', 'size': 12}
+    gl.ylabel_style = {'rotation': 0, 'ha': 'right', 'va': 'center', 'size': 12}
+
+    # legend = ax.legend()
+
+    title = (
+        data_obs.time_series.attrs['long_name']
+        + ' stations in '
+        + data_obs.time_series.attrs['region']
+        + '\nwith observations in the period '
+        + start_date.isoformat()
+        + ' - '
+        + end_date.isoformat()
+    )
+
+    ax.set_title(title, fontsize=12)
+
+    plot_name = data_obs.time_series.attrs['name'] + '_' + data_obs.time_series.attrs['region'] + '_stations_map.png'
+
+    plot_path = plot_dir / plot_name
+
+    plot_path.parent.mkdir(parents=True, exist_ok=True)
+
+    fig.savefig(plot_path, bbox_inches="tight", dpi=600)
+
+    return plot_path

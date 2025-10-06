@@ -1,12 +1,8 @@
 # Arotake
 
-**Arotake** is a Python toolkit for evaluating meteorological forecast models against observations. It provides modules for
+**Arotake** is a Python toolkit for evaluating meteorological forecast models against observations. It provides
 
-- Interpolation of model forecast data to observation locations
-- Calculation and visualizatoin of time series characterizing forecast vs. observations statistics
-- Definition of Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions
-
-and top level scripts for evaluation of NOAA HRRR forecasts against NCEI ISD-Lite surface observations, stratified by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions.
+- A command-line tool that evaluates NOAA High-Resolution Rapid Refresh (HRRR) surface forecasts vs. observations
 
 ## Installation (Linux / macOS)
 
@@ -18,86 +14,82 @@ conda activate arotake
 
 ## Overview
 
-The toolkit provides top level scripts for working with NOAA HRRR contiguous United States surface forecasts and NOAA ISD-Lite surface observations, organized by U.S. Regional Transmission Organization (RTO) and Independent System Operator (ISO) regions:
+The toolkit provides a top level command line tool for evaluating NOAA High-Resolution Rapid Refresh (HRRR) contiguous United States surface forecasts against surface observations:
 
-- **Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py**  
-  Downloads ISD-Lite station metadata, filters stations by location and data availability, assigns stations to RTO/ISO regions, generates a regional station map, downloads the observations (optionally in parallel), and saves region-specific NetCDF files with observations. This needs to be done only once per time range.
-
-- **Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py**  
-  Loads region-specific ISD-Lite observation NetCDF files and HRRR forecast files, computes regional HRRR-only statistics and HRRR-vs-observation diagnostics, saves results as NetCDF time series, and generates plots of the statistics for each region.
-
-The workflow is
-
-1. Download HRRR contiguous United States surface forecast data (once per time range)
-2. Download and construct RTO/ISO region ISD-Lite datasets (once per time range)
-3. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
+- **analyze_hrrr_vs_observations**  
+  Loads HRRR forecasts and observations, computes HRRR-vs-observation statistics time series, plots the results, and saves the results as a NetCDF file.
 
 ## Workflow
 
-## 1. Download HRRR surface forecast data
+The workflow is
 
-- Download the HRRR surface forecast data for the contiguous United States, a given time period, forecast initialization time, and forecast lead time, and convert them to netCDF files with the [HRRR-data](https://github.com/jankazil/hrrr-data) toolkit:
-    - Use the script    [DownloadHRRRSurfaceForecast.py](https://github.com/jankazil/hrrr-data/blob/main/scripts/DownloadHRRRSurfaceForecast.py) to download HRRR surface forecast files in GRIB format for a given time range from the Amazon S3 HRRR bucket, which also extracts select variables into netCDF files into a directory tree as follows:
+1. Download HRRR contiguous United States surface forecast data with [hrrr-data](https://github.com/jankazil/hrrr-data)
+2. Download and construct full-hourly UTC time series in a given U.S. state, territory, RTO/ISO region, or individual observation locations using one of the following tools:
+   - [`isd-lite-data`](https://github.com/jankazil/isd-lite-data)
+   - [`lcd-data`](https://github.com/jankazil/lcd-data)
+3. Calculate the HRRR-vs-observation statistics time series using this package.
 
-        `hrrr.<YYYYMMDD>/conus/hrrr.t<II>z.wrfsfcf<FF>_select_vars.nc`
+## Command-line interface (CLI)
 
-        where `YYYYMMDD` is the year, month, and day; `II` the model initialization hour, and `FF` the forecast time in hours.
+### `analyze_hrrr_vs_observations`
 
-## 2. Construct RTO/ISO region ISD-Lite datasets
+**Description**
 
-**Usage:**
+Compares HRRR forecasts with hourly surface observations, computes time series of model–observation statistics, and generates plots summarizing the results.  
 
-```bash
-Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <geojson_file> <isdlite_data_dir> [-n <n_jobs>]
-```
+This tool supports both ISD-Lite and LCDv2 observation datasets, provided as NetCDF files (generated, e.g., using [`isd-lite-data`](https://github.com/jankazil/isd-lite-data) or [`lcd-data`](https://github.com/jankazil/lcd-data)).
 
-(The definitions of the RTO/ISO regions in GEOJson format are provided with this distribution in the file data/RTO_ISO_regions.geojson, source: U.S. Energy Information Administration)Information Administration)
-
-**Example:**
-
-```bash
-Construct_ISDLite_data_netCDF_for_RTO_ISO_regions.py 2021 1 1 2021 12 31 data/RTO_ISO_regions.geojson data/ISD-LITE/ -n 8
-```
-
-**This will:**
-
-- Load RTO/ISO region geometries.
-- Download and filter ISD-Lite station metadata.  
-- Assign stations to RTO/ISO regions and save station lists.  
-- Download observations (parallelized if `-n` > 1).  
-- Save region-specific NetCDF files with the observations.  
-- Plot a map of the ISD stations in each region:  
-
-![ISD stations reporting in 2021](docs/RTO_ISO_regions_2021_ISD_stations_map.png)
-
-## 3. Calculate RTO/ISO region HRRR vs ISD-Lite Statistics Time Series
-
-**Usage:**
+**Usage**
 
 ```bash
-Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py <start_year> <start_month> <start_day> <end_year> <end_month> <end_day> <forecast_init_hour> <forecast_lead_hour> <geojson_file> <isdlite_data_dir> <hrrr_data_dir> <out_dir>
+analyze_hrrr_vs_observations   <start_year> <start_month> <start_day>   <end_year> <end_month> <end_day>   <forecast_init_hour> <forecast_lead_hour>   <hrrr_region> <hrrr_data_dir> <hrrr_var>   <obs_file> <obs_var> <out_dir>
 ```
 
-`<hrrr_data_dir>` is the parent directory of a data directory tree which contains the HRRR netCDF files as follows (see Section 1):  
+| Argument | Description |
+|:----------|:------------|
+| `start_year`, `start_month`, `start_day` | Start date (UTC) of the HRRR initialization range. |
+| `end_year`, `end_month`, `end_day` | End date (UTC) of the HRRR initialization range. |
+| `forecast_init_hour` | HRRR forecast initialization hour (UTC). |
+| `forecast_lead_hour` | HRRR forecast lead time in hours. |
+| `hrrr_region` | HRRR region tag (e.g. `conus`). |
+| `hrrr_data_dir` | Directory containing HRRR forecast NetCDF files. |
+| `hrrr_var` | Name of the variable in HRRR files (e.g. `TMP_P0_L103_GLC0` for 2-m temperature). |
+| `obs_file` | Path to the NetCDF file with full-hourly UTC observations. |
+| `obs_var` | Variable name in the observation file (e.g. `T`). |
+| `out_dir` | Output directory for NetCDF and plots (created if absent). |
 
-`hrrr.<YYYYMMDD>/conus/hrrr.t<II>z.wrfsfcf<FF>_select_vars.nc`
+**HRRR directory structure**
 
-(The definitions of the RTO/ISO regions in GEOJson format are provided with this distribution in the file data/RTO_ISO_regions.geojson, source: U.S. Energy Information Administration)
+HRRR forecast files must be available in subdirectories of `hrrr_data_dir` with the following path/name convention:
 
-**Example:**
+```
+hrrr.<YYYYMMDD>/<TAG>/hrrr.t<II>z.wrfsfcf<FF>.nc
+```
+
+where:
+- `YYYYMMDD` = initialization date  
+- `TAG` = HRRR region tag (e.g. `conus`)  
+- `II` = initialization hour (UTC)  
+- `FF` = forecast lead time (hours)
+
+**Example**
 
 ```bash
-Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py 2021 1 1 2021 12 30 12 6 data/RTO_ISO_regions.geojson data/ISD-LITE/ data/HRRR/ results/
+analyze-hrrr-vs-observations 2020 1 1 2020 12 31 0 12 conus data/ TMP_P0_L103_GLC0 ERCOT.2024-2024.nc T results/
+
 ```
 
-**This will:**
+**Output**
 
-- Load RTO/ISO region geometries and ISD-Lite observations.
-- Load HRRR forecasts for the specified initialization/lead hours.
-- Compute and save time series of HRRR regional statistics and of HRRR vs ISD-Lite observation statistics.
-- Generate plots of the time series per region, e.g.:
+- A NetCDF file containing time series of HRRR-versus-observation statistics at observation locations.  
+- Time series plots of bias, RMSE, correlation, and related metrics saved in a `.plots` subdirectory.  
+- Map of observation station locations.
 
-![HRRR vs ISD Lite 2 m temperature bias at stations reporting in 2021](docs/2021-01-01-2021-12-31.model_vs_obs_bias_at_obs_locs.png)
+**Notes**
+
+- HRRR and observation variables must share consistent units. Temperatures in Celsius are automatically converted to Kelvin.  
+- The observation dataset must fully cover the HRRR forecast validation period.  
+- This command can be run either as the installed entry point `analyze_hrrr_vs_observations` or directly via the Python script.
 
 ## Public API
 
@@ -107,19 +99,10 @@ Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py 2021 1 1 2021 12 30 12 
   Function:
   - `model_2D_interpolate`: Interpolates a 2-D model field to arbitrary lat/lon points using bilinear regridding with xESMF, with internal caching to improve performance.
 
-- **`arotake.rto_iso`**  
-  Functions:
-  - `regions`: Loads all RTO/ISO regions from a GeoJSON file and returns a `GeoDataFrame`.
-  - `region`: Loads a single RTO/ISO region by name and returns a `GeoDataFrame`.
-
-- **`arotake.statistics`**  
-  Classes:
-  - `Model2DRegionalStatisticsTimeSeries`: Computes and accumulates regional statistics (mean, std, var) of a model variable over a polygonal region, exports results as DataFrames or Datasets.
-  - `ModelVsObs2DStatisticsTimeSeries`: Computes model-vs-obs metrics (bias, RMSE, correlation, coverage) by interpolating model data to station locations and comparing with observations.
-
 - **`arotake.plotting`**  
   Functions:
   - `plot_df_timeseries`: Plots one figure per statistic by overlaying multiple DataFrames and saves PNG files with consistent naming conventions.
+  - `plot_locations_conus`: Creates a map of observation locations over the contiguous U.S. in Lambert Conformal projection.
 
 ## Development
 
@@ -133,7 +116,7 @@ Analyze_HRRR_vs_ISDLite_time_series_by_RTO_ISO_region.py 2021 1 1 2021 12 30 12 
 
 ### Notes
 
-Arotake uses [xESMF](https://xesmf.readthedocs.io]) (Universal Regridder for Geospatial Data), which uses [ESMPy](https://earthsystemmodeling.org/esmpy) (ESMF Python Regridding Interface) as backend. These packages are as of writing available as conda packages from conda-forge. This necessitates installing a conda environment to operate Arotake.
+Arotake uses [xESMF](https://xesmf.readthedocs.io) (Universal Regridder for Geospatial Data), which uses [ESMPy](https://earthsystemmodeling.org/esmpy) (ESMF Python Regridding Interface) as backend. These packages are, as of writing, available as conda packages from conda-forge. This necessitates installing a conda environment to operate Arotake.
 
 ## Name
 
