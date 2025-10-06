@@ -16,7 +16,7 @@ conda activate arotake
 
 The toolkit provides a top level command line tool for evaluating NOAA High-Resolution Rapid Refresh (HRRR) contiguous United States surface forecasts against surface observations:
 
-- **analyze_hrrr_vs_observations**  
+- **analyze-hrrr-vs-observations**  
   Loads HRRR forecasts and observations, computes HRRR-vs-observation statistics time series, plots the results, and saves the results as a NetCDF file.
 
 ## Workflow
@@ -31,7 +31,7 @@ The workflow is
 
 ## Command-line interface (CLI)
 
-### `analyze_hrrr_vs_observations`
+### `analyze-hrrr-vs-observations`
 
 **Description**
 
@@ -42,7 +42,7 @@ This tool supports both ISD-Lite and LCDv2 observation datasets, provided as Net
 **Usage**
 
 ```bash
-analyze_hrrr_vs_observations   <start_year> <start_month> <start_day>   <end_year> <end_month> <end_day>   <forecast_init_hour> <forecast_lead_hour>   <hrrr_region> <hrrr_data_dir> <hrrr_var>   <obs_file> <obs_var> <out_dir>
+analyze-hrrr-vs-observations   <start_year> <start_month> <start_day>   <end_year> <end_month> <end_day>   <forecast_init_hour> <forecast_lead_hour>   <hrrr_region> <hrrr_data_dir> <hrrr_var>   <obs_file> <obs_var> <out_dir>
 ```
 
 | Argument | Description |
@@ -89,7 +89,7 @@ analyze-hrrr-vs-observations 2020 1 1 2020 12 31 0 12 conus data/ TMP_P0_L103_GL
 
 - HRRR and observation variables must share consistent units. Temperatures in Celsius are automatically converted to Kelvin.  
 - The observation dataset must fully cover the HRRR forecast validation period.  
-- This command can be run either as the installed entry point `analyze_hrrr_vs_observations` or directly via the Python script.
+- This command can be run either as the installed entry point `analyze-hrrr-vs-observations` or directly via the Python script.
 
 ## Public API
 
