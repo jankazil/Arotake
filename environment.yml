@@ -2,7 +2,7 @@ name: arotake
 channels:
   - conda-forge
 dependencies:
-  - python=3.13
+  - python=3.11
   - pip
   - cartopy
   - cmcrameri
@@ -29,5 +29,4 @@ dependencies:
   - xarray
   - xesmf
   - pip:
-      - git+https://github.com/jankazil/isd-lite-data
       - git+https://github.com/jankazil/Arotake
