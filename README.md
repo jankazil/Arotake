@@ -35,7 +35,7 @@ The workflow is
 
 **Description**
 
-Compares HRRR forecasts with hourly surface observations, computes time series of model–observation statistics, and generates plots summarizing the results.  
+Compares HRRR forecasts with hourly surface observations, computes time series of model-observation statistics, and generates plots summarizing the results.  
 
 This tool supports both ISD-Lite and LCDv2 observation datasets, provided as NetCDF files (generated, e.g., using [`isd-lite-data`](https://github.com/jankazil/isd-lite-data) or [`lcd-data`](https://github.com/jankazil/lcd-data)).
 
@@ -108,11 +108,11 @@ analyze-hrrr-vs-observations 2020 1 1 2020 12 31 0 12 conus data/ TMP_P0_L103_GL
 
 ### Code Quality and Testing Commands
 
-- `make fmt` – Runs `ruff format` to auto-format Python files.
-- `make lint` – Runs `ruff check --fix` to lint and autofix style issues.
-- `make check` – Runs both formatting and linting.
-- `make type` – Runs `mypy` type checker in strict mode.
-- `make test` – Runs `pytest` with coverage reporting.
+- `make fmt` - Runs `ruff format` to auto-format Python files.
+- `make lint` - Runs `ruff check --fix` to lint and autofix style issues.
+- `make check` - Runs both formatting and linting.
+- `make type` - Runs `mypy` type checker in strict mode.
+- `make test` - Runs `pytest` with coverage reporting.
 
 ### Notes
 
@@ -124,7 +124,7 @@ Arotake is a word in te reo Māori meaning “review” or “evaluate.” The n
 
 ## Author
 
-Jan Kazil – jan.kazil.dev@gmail.com – [jankazil.com](https://jankazil.com)
+Jan Kazil - jan.kazil.dev@gmail.com - [jankazil.com](https://jankazil.com)
 
 ## License
 
