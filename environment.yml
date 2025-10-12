@@ -8,8 +8,6 @@ dependencies:
   - cftime
   - geopandas
   - h5netcdf
-  - h5py
-  - hdf5
   - libnetcdf
   - matplotlib
   - netcdf4
