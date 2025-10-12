@@ -14,7 +14,6 @@ dependencies:
   - numpy
   - pandas
   - proj
-  - proj-data
   - pyproj
   - regionmask
   - xarray
