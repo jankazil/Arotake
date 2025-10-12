@@ -7,9 +7,7 @@
 ## Installation (Linux / macOS)
 
 ```bash
-wget -O environment.yml https://raw.githubusercontent.com/jankazil/Arotake/main/environment.yml  
-mamba env create -y -f environment.yml  
-conda activate arotake
+mamba install -c jan.kazil -c conda-forge Arotake
 ```
 
 ## Overview
@@ -113,10 +111,6 @@ analyze-hrrr-vs-observations 2020 1 1 2020 12 31 0 12 conus data/ TMP_P0_L103_GL
 - `make check` - Runs both formatting and linting.
 - `make type` - Runs `mypy` type checker in strict mode.
 - `make test` - Runs `pytest` with coverage reporting.
-
-### Notes
-
-Arotake uses [xESMF](https://xesmf.readthedocs.io) (Universal Regridder for Geospatial Data), which uses [ESMPy](https://earthsystemmodeling.org/esmpy) (ESMF Python Regridding Interface) as backend. These packages are, as of writing, available as conda packages from conda-forge. This necessitates installing a conda environment to operate Arotake.
 
 ## Name
 
