@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arotake"
-version = "2.0.4"
+version = "2.0.5"
 description = "Arotake is a Python toolkit for evaluating meteorological forecast models against observations."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,10 +12,19 @@ license = { file = "LICENSE" }
 authors = [{ name = "Jan Kazil" }]
 dependencies = [
   "cartopy",
+  "cftime",
   "geopandas",
+  "h5netcdf",
+  "h5py",
+  "hdf5",
+  "libnetcdf",
   "matplotlib",
+  "netcdf4",
   "numpy",
   "pandas",
+  "proj",
+  "proj-data",
+  "pyproj",
   "regionmask",
   "xarray",
   "xesmf",

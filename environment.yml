@@ -5,10 +5,19 @@ dependencies:
   - python=3.11
   - pip
   - cartopy
+  - cftime
   - geopandas
+  - h5netcdf
+  - h5py
+  - hdf5
+  - libnetcdf
   - matplotlib
+  - netcdf4
   - numpy
   - pandas
+  - proj
+  - proj-data
+  - pyproj
   - regionmask
   - xarray
   - xesmf
