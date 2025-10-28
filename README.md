@@ -89,16 +89,70 @@ analyze-hrrr-vs-observations 2020 1 1 2020 12 31 0 12 conus data/ TMP_P0_L103_GL
 - The observation dataset must fully cover the HRRR forecast validation period.  
 - This command can be run either as the installed entry point `analyze-hrrr-vs-observations` or directly via the Python script.
 
-## Public API
+## Public application programming interface (API)
 
-### Modules
+### Module `arotake.analyze_hrrr_vs_observations`  
 
-- **`arotake.interpolation`**  
-  Function:
+####  Functions
+
+- `run_analysis`: API function that performs the same HRRR-versus-observation evaluation as the CLI `analyze-hrrr-vs-observations`, but callable directly from Python code.
+
+    ***Purpose***
+
+    Computes forecast-observation statistics (bias, RMSE, correlation, etc.) for HRRR surface fields relative to hourly observations     and generates corresponding plots and NetCDF outputs.
+
+    ***Returns***
+
+    - NetCDF file containing HRRR-versus-observation statistics time series.  
+    - Diagnostic plots (bias, RMSE, correlation) saved in the output directory.  
+    - Optional in-memory DataFrame for further analysis.
+
+    ***Notes***
+
+    - The function mirrors the CLI’s workflow and argument structure.  
+
+    ***Example***
+
+```python
+from arotake.analyze_hrrr_vs_observations import run_analysis
+
+start_date = datetime(year=2021, month=1, day=1, tzinfo=timezone.utc)
+end_date = datetime(year=2021, month=12, day=31, tzinfo=timezone.utc)
+forecast_init_hour = 12
+forecast_lead_hour = 32
+hrrr_region = 'conus'
+hrrr_data_dir = Path('HRRR') / Path('data')
+hrrr_var = 'TMP_P0_L103_GLC0'
+obs_file = Path('LCD') / Path('data') / Path('CO.2020-2025.nc')
+obs_var = 'T'
+out_dir = Path('results')
+
+results_file, plot_files = run_analysis(
+    start_date,
+    end_date,
+    forecast_init_hour,
+    forecast_lead_hour,
+    hrrr_region,
+    hrrr_data_dir,
+    hrrr_var,
+    obs_file,
+    obs_var,
+    out_dir,
+    verbose=True,
+    generate_plots=True
+)
+```
+
+### Module `arotake.interpolation`  
+
+####  Functions
+
   - `model_2D_interpolate`: Interpolates a 2-D model field to arbitrary lat/lon points using bilinear regridding with xESMF, with internal caching to improve performance.
 
-- **`arotake.plotting`**  
-  Functions:
+### Module `arotake.plotting`  
+
+####  Functions
+
   - `plot_df_timeseries`: Plots one figure per statistic by overlaying multiple DataFrames and saves PNG files with consistent naming conventions.
   - `plot_locations_conus`: Creates a map of observation locations over the contiguous U.S. in Lambert Conformal projection.
 
