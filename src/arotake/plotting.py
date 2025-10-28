@@ -392,4 +392,6 @@ def plot_locations_conus(
 
     fig.savefig(plot_path, bbox_inches="tight", dpi=600)
 
+    plt.close(fig)
+
     return plot_path
