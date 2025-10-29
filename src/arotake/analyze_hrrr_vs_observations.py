@@ -490,7 +490,7 @@ def main(argv=None):
         out_dir,
     ) = arg_parse(sys.argv[1:])
 
-    return run_analysis(
+    results_file, plot_files = run_analysis(
         start_date,
         end_date,
         forecast_init_hour,
