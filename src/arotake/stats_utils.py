@@ -1486,7 +1486,22 @@ class ModelVsObs2DStatisticsTimeSeries:
         min_iso = np.datetime_as_string(t64.min(), unit='D')
         max_iso = np.datetime_as_string(t64.max(), unit='D')
 
-        file_prefix = ds.attrs['model'] + '_vs_' + ds.attrs['observations'] + '.' + min_iso + '-' + max_iso
+        init_time_hours = self.model_forecast_init_time[0].hour
+        forecast_lead_time_hours = round(self.model_forecast_lead_time[0].total_seconds() / 3600)
+
+        file_prefix = (
+            ds.attrs['model']
+            + '_t'
+            + str(init_time_hours)
+            + 'z_f'
+            + str(forecast_lead_time_hours)
+            + 'h_vs_'
+            + ds.attrs['observations']
+            + '.'
+            + min_iso
+            + '-'
+            + max_iso
+        )
         file_suffix = ds.attrs['model_variable'] + '.' + self.model_region_name[0]
         nc_file_name = Path(file_prefix + '.' + file_suffix + '.nc')
 
