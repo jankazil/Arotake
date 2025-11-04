@@ -71,6 +71,8 @@ if [[ -z "$PYTHON_VERSION" ]]; then
   exit 1
 fi
 
+echo "Using Python ${PYTHON_VERSION} to create package."
+
 # Further metadata
 
 CODE_NAME=""
@@ -185,10 +187,9 @@ echo "CODE_TAG=$CODE_TAG"
 echo "SUMMARY=$SUMMARY"
 echo "REPO_URL=$REPO_URL"
 echo "DEPENDENCIES=$DEPENDENCIES"
-echo "PYTHON_VERSION=${PYTHON_VERSION}"
 
 echo ""
-read -p "This script will attempt to create a conda package and upload it to anaconda.org channel ${ANACONDA_USER_NAME}. Continue (Y/n)? "
+read -p "This script will attempt to create a conda package and upload it to anaconda.org. Continue (Y/n)? "
 echo ""
 
 if [[  $REPLY != "Y" ]] ; then
