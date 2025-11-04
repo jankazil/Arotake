@@ -70,7 +70,7 @@ Programmatic:
 
     from arotake.analyze_hrrr_vs_observations import run_analysis
     results_file, plot_files = run_analysis(
-        start_date, end_date, forecast_init_hour, forecast_lead_hour,
+        forecast_init_start_date, forecast_init_end_date, forecast_init_hour, forecast_lead_hour,
         hrrr_region, hrrr_data_dir, hrrr_var, obs_file, obs_var, out_dir,
         verbose=True, generate_plots=True
     )
@@ -117,8 +117,8 @@ obs_lon_name = 'LON'
 
 
 def run_analysis(
-    start_date: datetime,
-    end_date: datetime,
+    forecast_init_start_date: datetime,
+    forecast_init_end_date: datetime,
     forecast_init_hour: int,
     forecast_lead_hour: int,
     hrrr_region: str,
@@ -143,17 +143,14 @@ def run_analysis(
 
     Parameters
     ----------
-    start_date : datetime.datetime (timezone-aware, UTC)
-        First HRRR *initialization* date to include.
-    end_date : datetime.datetime (timezone-aware, UTC)
-        Last HRRR *initialization* date to include (inclusive).
+    forecast_init_start_date : datetime.datetime (timezone-aware, UTC)
+        First HRRR *initialization* date to include. Time portion is irrelevant.
+    forecast_init_end_date : datetime.datetime (timezone-aware, UTC)
+        Last HRRR *initialization* date to include (inclusive). Time portion is irrelevant.
     forecast_init_hour : int
         HRRR initialization hour (UTC) to process, 0–23.
     forecast_lead_hour : int
-        Forecast lead time in hours for the validation (for example, 1 for
-        t+1h). This defines the forecast *valid* time as
-        start_date + forecast_init_hour + forecast_lead_hour (and analogously
-        for each subsequent day up to `end_date`).
+        Forecast lead time in hours.
     hrrr_region : str
         HRRR region tag (for example, "conus").
     hrrr_data_dir : pathlib.Path
@@ -218,8 +215,8 @@ def run_analysis(
     >>> from pathlib import Path
     >>> from datetime import datetime, timezone
     >>> run_analysis(
-    ...     start_date=datetime(2021, 1, 1, tzinfo=timezone.utc),
-    ...     end_date=datetime(2021, 1, 3, tzinfo=timezone.utc),
+    ...     forecast_init_start_date=datetime(2021, 1, 1, tzinfo=timezone.utc),
+    ...     forecast_init_end_date=datetime(2021, 1, 3, tzinfo=timezone.utc),
     ...     forecast_init_hour=0,
     ...     forecast_lead_hour=1,
     ...     hrrr_region="conus",
@@ -232,6 +229,10 @@ def run_analysis(
     ...     generate_plots=True,
     ... )
     '''
+
+    # Set the time portion of the first and last HRRR initialization date to midnight
+    forecast_init_start_date_midnight = forecast_init_start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    forecast_init_end_date_midnight = forecast_init_end_date.replace(hour=0, minute=0, second=0, microsecond=0)
 
     #
     # Load observations
@@ -262,13 +263,13 @@ def run_analysis(
 
     # Loop variable
 
-    forecast_creation_date = start_date
+    forecast_creation_date = forecast_init_start_date_midnight
 
     # Loop increment
 
     time_step = timedelta(days=1)
 
-    while forecast_creation_date <= end_date:
+    while forecast_creation_date <= forecast_init_end_date_midnight:
         # Forecast initilization time
         forecast_init_time = forecast_creation_date + forecast_init_time_delta
 
@@ -366,8 +367,8 @@ def run_analysis(
         if hrrr_region == 'conus':
             plot_file_path = plotting.plot_locations_conus(
                 data_obs,
-                start_date + forecast_init_time_delta + forecast_lead_time_delta,
-                end_date + forecast_init_time_delta + forecast_lead_time_delta,
+                forecast_init_start_date_midnight + forecast_init_time_delta + forecast_lead_time_delta,
+                forecast_init_end_date_midnight + forecast_init_time_delta + forecast_lead_time_delta,
                 obs_lat_name,
                 obs_lon_name,
                 plot_dir,
@@ -447,8 +448,8 @@ def arg_parse(argv=None):
 
     args = parser.parse_args()
 
-    start_date = datetime(year=args.start_year, month=args.start_month, day=args.start_day, tzinfo=timezone.utc)
-    end_date = datetime(year=args.end_year, month=args.end_month, day=args.end_day, tzinfo=timezone.utc)
+    forecast_init_start_date = datetime(year=args.start_year, month=args.start_month, day=args.start_day, tzinfo=timezone.utc)
+    forecast_init_end_date = datetime(year=args.end_year, month=args.end_month, day=args.end_day, tzinfo=timezone.utc)
     forecast_init_hour = args.forecast_init_hour
     forecast_lead_hour = args.forecast_lead_hour
     hrrr_region = args.hrrr_region
@@ -459,8 +460,8 @@ def arg_parse(argv=None):
     out_dir = Path(args.out_dir)
 
     return (
-        start_date,
-        end_date,
+        forecast_init_start_date,
+        forecast_init_end_date,
         forecast_init_hour,
         forecast_lead_hour,
         hrrr_region,
@@ -478,8 +479,8 @@ def main(argv=None):
     '''
 
     (
-        start_date,
-        end_date,
+        forecast_init_start_date,
+        forecast_init_end_date,
         forecast_init_hour,
         forecast_lead_hour,
         hrrr_region,
@@ -491,8 +492,8 @@ def main(argv=None):
     ) = arg_parse(sys.argv[1:])
 
     results_file, plot_files = run_analysis(
-        start_date,
-        end_date,
+        forecast_init_start_date,
+        forecast_init_end_date,
         forecast_init_hour,
         forecast_lead_hour,
         hrrr_region,
