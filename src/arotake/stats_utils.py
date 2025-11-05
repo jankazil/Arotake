@@ -925,12 +925,12 @@ class ModelVsObs2DStatisticsTimeSeries:
         else:
             self.loc_notrep_frac = 0
 
-        # Model statistics at observation locations
-        self.model_mean = np.mean(model_data[loc_rep_index])
-        self.model_std = np.std(model_data[loc_rep_index])
-        self.model_var = np.var(model_data[loc_rep_index])
-
         if self.loc_rep_n > 0:
+            # Model statistics at observation locations
+            self.model_mean = np.mean(model_data[loc_rep_index])
+            self.model_std = np.std(model_data[loc_rep_index])
+            self.model_var = np.var(model_data[loc_rep_index])
+
             # Observations statistics at observation locations
             self.obs_mean = np.mean(obs_data[obs_time_index, loc_rep_index])
             self.obs_std = np.std(obs_data[obs_time_index, loc_rep_index])
@@ -946,6 +946,9 @@ class ModelVsObs2DStatisticsTimeSeries:
             self.model_r_corr = np.corrcoef(model_data[loc_rep_index], obs_data[obs_time_index, loc_rep_index])[0, 1]
 
         else:
+            self.model_mean = np.nan
+            self.model_std = np.nan
+            self.model_var = np.nan
             self.obs_mean = np.nan
             self.obs_std = np.nan
             self.obs_var = np.nan
