@@ -16,6 +16,7 @@ dependencies:
   - proj
   - pyproj
   - regionmask
+  - scipy
   - xarray
   - xesmf
   - pip:
