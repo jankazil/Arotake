@@ -273,43 +273,77 @@ def pandas_series_plottable(col: pd.Series) -> bool:
 
 
 def plot_locations_conus(
-    data_obs: object, start_date: datetime, end_date: datetime, obs_lat_name: str, obs_lon_name: str, plot_dir: Path
+    data_obss: list[object] | object,
+    start_dates: list[datetime] | datetime,
+    end_dates: list[datetime] | datetime,
+    obs_lat_names: list[str] | str,
+    obs_lon_names: list[str] | str,
+    plot_dir: Path,
 ) -> Path:
     '''
-    Creates and saves a map of observation station locations within the
-    contiguous United States (CONUS) using a Lambert Conformal projection.
+    Generates and saves a map showing the locations of observation stations within the
+    contiguous United States (CONUS) using a Lambert Conformal projection consistent
+    with the HRRR model domain.
 
-    The function plots the spatial distribution of observation stations contained
-    in an xarray Dataset accessible through `data_obs.time_series`, overlaying
-    them on a map with coastlines, state borders, and gridlines. The map extent
-    covers the continental United States, and the resulting figure is saved as
-    a high-resolution PNG file.
+    This function accepts one or more observation dataset objects, each containing a
+    `.time_series` xarray Dataset with latitude and longitude coordinates for station
+    locations. Each dataset is plotted as a separate layer with distinct marker sizes,
+    allowing visual differentiation between datasets. The resulting figure includes
+    coastlines, state and national borders, gridlines with labeled coordinates, and a
+    legend describing each dataset and its associated observation period.
 
     Args:
-        data_obs (object): Object containing a `.time_series` xarray Dataset with
-            station observation data. The dataset must include attributes
-            `'long_name'`, `'region'`, and `'name'`, as well as coordinate
+        data_obss (list[object] | object): One or more objects containing a `.time_series`
+            xarray Dataset with station observation data. Each dataset must include
+            attributes `'long_name'`, `'region'`, and `'name'`, as well as coordinate
             variables for station latitude and longitude.
-        start_date (datetime): Start date of the observation period to display
-            in the plot title.
-        end_date (datetime): End date of the observation period to display
-            in the plot title.
-        obs_lat_name (str): Name of the latitude variable in `data_obs.time_series`.
-        obs_lon_name (str): Name of the longitude variable in `data_obs.time_series`.
-        plot_dir (Path): Directory in which to save the generated plot image.
-            The directory will be created if it does not already exist.
+        start_dates (list[datetime] | datetime): One or more start dates corresponding
+            to the observation periods for each dataset. Used in legend labeling.
+        end_dates (list[datetime] | datetime): One or more end dates corresponding
+            to the observation periods for each dataset. Used in legend labeling.
+        obs_lat_names (list[str] | str): One or more names of the latitude variables
+            within the `.time_series` Datasets.
+        obs_lon_names (list[str] | str): One or more names of the longitude variables
+            within the `.time_series` Datasets.
+        plot_dir (Path): Directory where the generated map image will be saved. The
+            directory will be created if it does not exist.
 
     Returns:
-        Path: Full path to the saved plot image file.
+        Path: Path to the saved PNG image file showing the station map.
+
+    Raises:
+        AssertionError: If the provided input lists do not all have the same length.
 
     Notes:
-        - The map projection used is Lambert Conformal Conic, consistent with
-          the HRRR model domain.
-        - The output image is saved with a resolution of 600 DPI and includes
-          labeled longitude and latitude gridlines.
-        - The filename is constructed from the dataset’s `'name'` and `'region'`
-          attributes, ending with `'_stations_map.png'`.
+        - The projection used is Lambert Conformal Conic, centered at 97.5°W and 38.5°N,
+          matching the HRRR domain.
+        - The map extent spans approximately 25°N–50°N and 123°W–71°W, covering the
+          continental United States.
+        - Each dataset is plotted with a distinct marker size (larger for earlier entries).
+        - Gridlines include labeled parallels and meridians with degree symbols.
+        - The output image is saved at 600 DPI with the filename constructed from the
+          dataset regions and names, joined by periods, followed by `".stations_map.png"`.
+        - A legend indicates each dataset’s long name, region, and date range.
     '''
+
+    # Normalize all inputs to lists
+
+    if not isinstance(data_obss, list):
+        data_obss = [data_obss]
+    if not isinstance(start_dates, list):
+        start_dates = [start_dates]
+    if not isinstance(end_dates, list):
+        end_dates = [end_dates]
+    if not isinstance(obs_lat_names, list):
+        obs_lat_names = [obs_lat_names]
+    if not isinstance(obs_lon_names, list):
+        obs_lon_names = [obs_lon_names]
+
+    # Make sure that all lists have the same length:
+
+    assert (
+        len(data_obss) == len(start_dates) == len(end_dates) == len(obs_lat_names) == len(obs_lon_names)
+    ), 'Arguments are lists of different length. Aborting.'
 
     # Define the target map projection (Lambert Conformal as in HRRR)
     hrrr_proj = ccrs.LambertConformal(
@@ -333,14 +367,29 @@ def plot_locations_conus(
 
     # Draw locations
 
-    ax.plot(
-        data_obs.time_series[obs_lon_name],
-        data_obs.time_series[obs_lat_name],
-        'o',
-        markersize=2,
-        color='red',
-        transform=ccrs.PlateCarree(),  # tell Cartopy these are lat/lon coords
-    )
+    markersizes = list(range(len(data_obss), 0, -1))
+
+    for data_obs, start_date, end_date, obs_lat_name, obs_lon_name, markersize in zip(
+        data_obss, start_dates, end_dates, obs_lat_names, obs_lon_names, markersizes, strict=True
+    ):
+        label = (
+            data_obs.time_series.attrs['long_name']
+            + ',\n'
+            + data_obs.time_series.attrs['region']
+            + ', '
+            + start_date.date().isoformat()
+            + '$-$'
+            + end_date.date().isoformat()
+        )
+
+        ax.plot(
+            data_obs.time_series[obs_lon_name],
+            data_obs.time_series[obs_lat_name],
+            'o',
+            markersize=markersize,
+            label=label,
+            transform=ccrs.PlateCarree(),  # tell Cartopy these are lat/lon coords
+        )
 
     # Coordinate gridlines
 
@@ -370,21 +419,19 @@ def plot_locations_conus(
     gl.xlabel_style = {'rotation': 0, 'ha': 'center', 'va': 'top', 'size': 12}
     gl.ylabel_style = {'rotation': 0, 'ha': 'right', 'va': 'center', 'size': 12}
 
-    # legend = ax.legend()
+    # Add legend
+    ax.legend()
 
-    title = (
-        data_obs.time_series.attrs['long_name']
-        + ' stations in '
-        + data_obs.time_series.attrs['region']
-        + '\nwith observations in the period '
-        + start_date.isoformat()
-        + ' - '
-        + end_date.isoformat()
-    )
+    title = ''
 
     ax.set_title(title, fontsize=12)
 
-    plot_name = data_obs.time_series.attrs['name'] + '_' + data_obs.time_series.attrs['region'] + '_stations_map.png'
+    obs_descriptors = [
+        data_obs.time_series.attrs['region'] + '_' + data_obs.time_series.attrs['name'] for data_obs in data_obss
+    ]
+    obs_descriptor = '.'.join(obs_descriptors)
+
+    plot_name = obs_descriptor + '.stations_map.png'
 
     plot_path = plot_dir / plot_name
 
@@ -395,3 +442,131 @@ def plot_locations_conus(
     plt.close(fig)
 
     return plot_path
+
+
+def line_plot_1d(
+    x_size,
+    y_size,
+    x_label,
+    y_label,
+    title,
+    x_datas,
+    y_datas,
+    data_labels,
+    linecolors,
+    linewidths,
+    linestyles,
+    x_min=None,
+    x_max=None,
+    y_min=None,
+    y_max=None,
+    plot_path=None,
+):
+    '''
+    Generate and optionally save a one-dimensional line plot for one or more datasets.
+
+    Parameters
+    ----------
+    x_size : float
+        Width of the figure in inches.
+    y_size : float
+        Height of the figure in inches.
+    x_label : str
+        Label for the x-axis.
+    y_label : str
+        Label for the y-axis.
+    title : str
+        Title of the plot.
+    x_datas : list of array-like or array-like
+        One or more sequences of x-axis values, one per dataset.
+    y_datas : list of array-like or array-like
+        One or more sequences of y-axis values corresponding to each entry in `x_datas`.
+    data_labels : list of str or str
+        Labels for each data series, used in the legend.
+    linecolors : list of str or str
+        Colors for each plotted line (any valid Matplotlib color specification).
+    linewidths : list of float or float
+        Line widths for each dataset.
+    linestyles : list of str or str
+        Line styles for each dataset (e.g., "-", "--", "-.", ":").
+    x_min : float, optional
+        Minimum limit for the x-axis. If None, determined automatically.
+    x_max : float, optional
+        Maximum limit for the x-axis. If None, determined automatically.
+    y_min : float, optional
+        Minimum limit for the y-axis. If None, determined automatically.
+    y_max : float, optional
+        Maximum limit for the y-axis. If None, determined automatically.
+    plot_path : pathlib.Path or str, optional
+        Path to save the generated plot image. If None, the plot is not saved.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        If any of the input lists differ in length, as enforced by ``zip(..., strict=True)``.
+
+    Notes
+    -----
+    - Inputs that are provided as single objects (rather than lists) are automatically
+      wrapped into lists for consistent iteration.
+    - All iterable inputs (`x_datas`, `y_datas`, `data_labels`, `linecolors`,
+      `linewidths`, and `linestyles`) must have equal length.
+    - A Matplotlib figure is created and each dataset is plotted with the corresponding
+      visual properties. Axis labels, title, limits, and legend are applied as specified.
+    - If ``plot_path`` is given, the figure is saved to that location; otherwise, it is
+      only created and closed.
+    - The figure is always closed after saving to free memory.
+    '''
+
+    # Normalize inputs that are supposed to be lists to lists
+
+    if not isinstance(x_datas, list):
+        x_datas = [x_datas]
+    if not isinstance(y_datas, list):
+        y_datas = [y_datas]
+    if not isinstance(data_labels, list):
+        data_labels = [data_labels]
+    if not isinstance(linecolors, list):
+        linecolors = [linecolors]
+    if not isinstance(linewidths, list):
+        linewidths = [linewidths]
+    if not isinstance(linestyles, list):
+        linestyles = [linestyles]
+
+    # Plot
+
+    fig, ax = plt.subplots(figsize=(x_size, y_size), dpi=300)
+
+    for x_data, y_data, data_label, linecolor, linewidth, linestyle in zip(
+        x_datas, y_datas, data_labels, linecolors, linewidths, linestyles, strict=True
+    ):
+        ax.plot(
+            x_data,
+            y_data,
+            linewidth=linewidth,
+            color=linecolor,
+            linestyle=linestyle,
+            label=data_label,
+        )
+
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+
+    ax.set_title(title)
+    ax.legend(title=None)
+
+    if x_min is not None and x_max is not None:
+        ax.set_xlim(x_min, x_max)
+
+    if y_min is not None and y_max is not None:
+        ax.set_ylim(y_min, y_max)
+
+    if plot_path:
+        plot_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(plot_path, bbox_inches='tight')
+
+    plt.close()
