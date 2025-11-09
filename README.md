@@ -1,10 +1,8 @@
 # Arotake
 
-**Arotake** is a Python toolkit for evaluating meteorological forecast models against observations. It provides
+**Arotake** is a Python toolkit for evaluating meteorological forecast models against observations. It provides a command-line tool and an application programming interface that evaluates NOAA High-Resolution Rapid Refresh (HRRR) surface forecasts vs. observations.
 
-- A command-line tool that evaluates NOAA High-Resolution Rapid Refresh (HRRR) surface forecasts vs. observations
-
-## Installation (Linux / macOS)
+## Installation
 
 ```bash
 mamba install -c jan.kazil -c conda-forge Arotake
@@ -12,20 +10,29 @@ mamba install -c jan.kazil -c conda-forge Arotake
 
 ## Overview
 
-The toolkit provides a top level command line tool for evaluating NOAA High-Resolution Rapid Refresh (HRRR) contiguous United States surface forecasts against surface observations:
+The toolkit provides a top level command line (CLI) tool and application programming interface (API) for evaluating NOAA High-Resolution Rapid Refresh (HRRR) contiguous United States surface forecasts against surface observations:
 
 - **analyze-hrrr-vs-observations**  
   Loads HRRR forecasts and observations, computes HRRR-vs-observation statistics time series, plots the results, and saves the results as a NetCDF file.
 
-## Workflow
+## Workflow (using API)
 
-The workflow is
+The workflow is shown in the [Arotake Demo](https://github.com/jankazil/Arotake/blob/main/notebooks/ArotakeDemo.ipynb) Jupyter notebook. The notebook evaluates High Resolution Rapid Refresh (HRRR) forecast data against Local Climatological Data (LCD) v2 observations. The workflow is
 
-1. Download HRRR contiguous United States surface forecast data with [hrrr-data](https://github.com/jankazil/hrrr-data)
-2. Download and construct full-hourly UTC time series in a given U.S. state, territory, RTO/ISO region, or individual observation locations using one of the following tools:
-   - [`isd-lite-data`](https://github.com/jankazil/isd-lite-data)
-   - [`lcd-data`](https://github.com/jankazil/lcd-data)
-3. Calculate the HRRR-vs-observation statistics time series using this package.
+- Specify settings and working directories  
+- Specify HRRR forecast parameters (analysis period, forecast initialization time, forecast valid time, ...)  
+- Download and process HRRR forecast data
+- Specify LCD v2 observation parameters (analysis period, analysis regions)  
+- Download and process LCD v2 data
+- Evaluate the HRRR forecast against the LCD v2 observations. This creates and saves time series as netCDF files creates plots, for each analysis region, of the model bias, rmse, correlation with observations, etc.  
+- Create a plot with the map of the LCD v2 observation locations.  
+- Create time series and probability density functions plots of the model bias, rmse, correlation with observations, etc., for all analysis regions concurrently.  
+
+Requirements: Jupyter kernel with the following packages installed:  
+
+- [`Arotake`](https://github.com/jankazil/Arotake)  
+- [`hrrr-data`](https://github.com/jankazil/hrrr-data)  
+- [`lcd-data`](https://github.com/jankazil/lcd-data)
 
 ## Command-line interface (CLI)
 
@@ -106,42 +113,6 @@ analyze-hrrr-vs-observations 2020 1 1 2020 12 31 0 12 conus data/ TMP_P0_L103_GL
     - NetCDF file containing HRRR-versus-observation statistics time series.  
     - Diagnostic plots (bias, RMSE, correlation) saved in the output directory.  
     - Optional in-memory DataFrame for further analysis.
-
-    ***Notes***
-
-    - The function mirrors the CLI’s workflow and argument structure.  
-
-    ***Example***
-
-```python
-from arotake.analyze_hrrr_vs_observations import run_analysis
-
-start_date = datetime(year=2021, month=1, day=1, tzinfo=timezone.utc)
-end_date = datetime(year=2021, month=12, day=31, tzinfo=timezone.utc)
-forecast_init_hour = 12
-forecast_lead_hour = 32
-hrrr_region = 'conus'
-hrrr_data_dir = Path('HRRR') / Path('data')
-hrrr_var = 'TMP_P0_L103_GLC0'
-obs_file = Path('LCD') / Path('data') / Path('CO.2020-2025.nc')
-obs_var = 'T'
-out_dir = Path('results')
-
-results_file, plot_files = run_analysis(
-    start_date,
-    end_date,
-    forecast_init_hour,
-    forecast_lead_hour,
-    hrrr_region,
-    hrrr_data_dir,
-    hrrr_var,
-    obs_file,
-    obs_var,
-    out_dir,
-    verbose=True,
-    generate_plots=True
-)
-```
 
 ### Module `arotake.interpolation`  
 
