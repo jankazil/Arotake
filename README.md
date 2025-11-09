@@ -1,6 +1,6 @@
 # Arotake
 
-**Arotake** is a Python toolkit for evaluating meteorological forecast models against observations. It provides a command-line tool and an application programming interface that evaluates NOAA High-Resolution Rapid Refresh (HRRR) surface forecasts vs. observations.
+**Arotake** is a Python toolkit for evaluating meteorological forecast models against observations. It provides a command-line tool and an application programming interface that evaluates NOAA High-Resolution Rapid Refresh (HRRR) surface forecasts with Local Climatological Data (LCD) v2 observations.
 
 ## Installation
 
@@ -10,7 +10,7 @@ mamba install -c jan.kazil -c conda-forge Arotake
 
 ## Overview
 
-The toolkit provides a top level command line (CLI) tool and application programming interface (API) for evaluating NOAA High-Resolution Rapid Refresh (HRRR) contiguous United States surface forecasts against surface observations:
+The toolkit provides a top level command line (CLI) tool and application programming interface (API) for evaluating NOAA High-Resolution Rapid Refresh (HRRR) contiguous United States surface forecasts with Local Climatological Data (LCD) v2 observations:
 
 - **analyze-hrrr-vs-observations**  
   Loads HRRR forecasts and observations, computes HRRR-vs-observation statistics time series, plots the results, and saves the results as a NetCDF file.
