@@ -616,10 +616,8 @@ def plot_evaluation_time_series(
     model_vs_obs_files: list[Path],
     plot_dir: Path,
     title: 'str | None' = None,
-    x_min: 'object | None' = None,
-    x_max: 'object | None' = None,
-    y_min: 'float | None' = None,
-    y_max: 'float | None' = None,
+    t_min: 'object | None' = None,
+    t_max: 'object | None' = None,
     x_size: 'float | None' = None,
     y_size: 'float | None' = None,
     colors: 'list[object] | None' = None,
@@ -644,12 +642,9 @@ def plot_evaluation_time_series(
     title : str | None, optional
         Figure title applied to all plots.
 
-    x_min, x_max : object | None, optional
-        X-axis limits passed through to the plotting backend. Accepts datetime-like or
+    t_min, t_max : object | None, optional
+        X-axis (time) limits passed through to the plotting backend. Accepts datetime-like or
         numeric values, depending on what ``plotting.line_plot_1d`` supports.
-
-    y_min, y_max : float | None, optional
-        Y-axis limits.
 
     x_size, y_size : float | None, optional
         Figure size in inches for width and height, respectively.
@@ -830,14 +825,13 @@ def plot_evaluation_time_series(
         time = [ds['time'] for ds in dss]
         data = [ds[var_name] for ds in dss]
 
-        if x_min is None:
-            x_min = min(time[0])
-        if x_max is None:
-            x_max = max(time[0])
-        if y_min is None:
-            y_min = None
-        if y_max is None:
-            y_max = None
+        if t_min is None:
+            t_min = np.min([np.min(t) for t in time])
+        if t_max is None:
+            t_max = np.max([np.max(t) for t in time])
+
+        y_min = None
+        y_max = None
 
         # Other elements
 
@@ -870,8 +864,8 @@ def plot_evaluation_time_series(
             colors,
             linethicknesses,
             linestyles,
-            x_min=x_min,
-            x_max=x_max,
+            x_min=t_min,
+            x_max=t_max,
             y_min=y_min,
             y_max=y_max,
             legend_font_size=legend_font_size,
