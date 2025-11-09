@@ -765,8 +765,6 @@ def plot_evaluation_time_series(
                 ds.model_region_name
                 + ', '
                 + ds.model
-                + ' vs '
-                + ds.observations
                 + ', '
                 + 'init hour = '
                 + str(model_forecast_init_hour)
@@ -774,7 +772,8 @@ def plot_evaluation_time_series(
                 + 'lead time = '
                 + str(model_forecast_lead_hour)
                 + ' h'
-                #                    + ', ' + str(ds['time'].values[0].astype('datetime64[D]'))  + '$-$' + str(ds['time'].values[-1].astype('datetime64[D]'))
+                + ' vs '
+                + ds.observations
                 for ds, model_forecast_init_hour, model_forecast_lead_hour in zip(
                     dss, model_forecast_init_hours, model_forecast_lead_hours, strict=True
                 )
@@ -791,28 +790,12 @@ def plot_evaluation_time_series(
                 + 'lead time = '
                 + str(model_forecast_lead_hour)
                 + ' h'
-                #                    + ', ' + str(ds['time'].values[0].astype('datetime64[D]'))  + '$-$' + str(ds['time'].values[-1].astype('datetime64[D]'))
                 for ds, model_forecast_init_hour, model_forecast_lead_hour in zip(
                     dss, model_forecast_init_hours, model_forecast_lead_hours, strict=True
                 )
             ]
         else:
-            labels = [
-                ds.model_region_name
-                + ', '
-                + ds.observations
-                + ', '
-                + 'init hour = '
-                + str(model_forecast_init_hour)
-                + ' UTC , '
-                + 'lead time = '
-                + str(model_forecast_lead_hour)
-                + ' h'
-                #                    + ', ' + str(ds['time'].values[0].astype('datetime64[D]'))  + '$-$' + str(ds['time'].values[-1].astype('datetime64[D]'))
-                for ds, model_forecast_init_hour, model_forecast_lead_hour in zip(
-                    dss, model_forecast_init_hours, model_forecast_lead_hours, strict=True
-                )
-            ]
+            labels = [ds.model_region_name + ', ' + ds.observations for ds in dss]
 
         #
         # x- and y-values
@@ -1052,8 +1035,6 @@ def plot_evaluation_pdf(
                 ds.model_region_name
                 + ', '
                 + ds.model
-                + ' vs '
-                + ds.observations
                 + ', '
                 + 'init hour = '
                 + str(model_forecast_init_hour)
@@ -1061,6 +1042,8 @@ def plot_evaluation_pdf(
                 + 'lead time = '
                 + str(model_forecast_lead_hour)
                 + ' h'
+                + ' vs '
+                + ds.observations
                 + ', '
                 + str(ds['time'].values[0].astype('datetime64[D]'))
                 + '$-$'
@@ -1091,23 +1074,12 @@ def plot_evaluation_pdf(
             ]
         else:
             labels = [
-                ds.model_region_name
-                + ', '
-                + ds.observations
-                + ', '
-                + 'init hour = '
-                + str(model_forecast_init_hour)
-                + ' UTC , '
-                + 'lead time = '
-                + str(model_forecast_lead_hour)
-                + ' h'
+                ds.observations
                 + ', '
                 + str(ds['time'].values[0].astype('datetime64[D]'))
                 + '$-$'
                 + str(ds['time'].values[-1].astype('datetime64[D]'))
-                for ds, model_forecast_init_hour, model_forecast_lead_hour in zip(
-                    dss, model_forecast_init_hours, model_forecast_lead_hours, strict=True
-                )
+                for ds in dss
             ]
 
         #
