@@ -44,6 +44,7 @@ Requirements: Jupyter kernel with the following packages installed:
   <img src="plots/ME_MT.PDF.TMP_P0_L103_GLC0.model_vs_obs_bias_at_obs_locs.png" width="40%">
   <img src="plots/ME_MT.PDF.TMP_P0_L103_GLC0.model_vs_obs_rmse_at_obs_locs.png" width="40%">
 </p>
+
 ## Command-line interface (CLI)
 
 ### `analyze-hrrr-vs-observations`
