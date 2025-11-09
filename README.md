@@ -19,14 +19,14 @@ The toolkit provides a top level command line (CLI) tool and application program
 
 The workflow is shown in the [Arotake Demo](https://github.com/jankazil/Arotake/blob/main/notebooks/ArotakeDemo.ipynb) Jupyter notebook. The notebook evaluates High Resolution Rapid Refresh (HRRR) forecast data against Local Climatological Data (LCD) v2 observations. The workflow is
 
-- Specify settings and working directories  
-- Specify HRRR forecast parameters (analysis period, forecast initialization time, forecast valid time, ...)  
-- Download and process HRRR forecast data
-- Specify LCD v2 observation parameters (analysis period, analysis regions)  
-- Download and process LCD v2 data
-- Evaluate the HRRR forecast against the LCD v2 observations. This creates and saves time series as netCDF files and creates plots, for each analysis region, of the model bias, rmse, correlation with observations, etc.  
-- Create a plot with the map of the LCD v2 observation locations.  
-- Create time series and probability density functions plots of the model bias, rmse, correlation with observations, etc., for all analysis regions concurrently.  
+1. Specify settings and working directories
+2. Specify HRRR forecast parameters (analysis period, forecast initialization time, forecast valid time, ...)
+3. Download and process HRRR forecast data
+4. Specify LCD v2 observation parameters (analysis period, analysis regions)
+5. Download and process LCD v2 data
+6. Evaluate the HRRR forecast against the LCD v2 observations. This creates and saves time series as netCDF files creates plots, for each analysis region, of the model bias, rmse, correlation with observations, etc.
+7. Create a plot with the map of the LCD v2 observation locations.
+8. Create time series and probability density functions plots of the model bias, rmse, correlation with observations, etc., for all analysis regions concurrently.
 
 Requirements: Jupyter kernel with the following packages installed:  
 
@@ -34,6 +34,16 @@ Requirements: Jupyter kernel with the following packages installed:
 - [`hrrr-data`](https://github.com/jankazil/hrrr-data)  
 - [`lcd-data`](https://github.com/jankazil/lcd-data)
 
+### Sample output
+
+<p align="center">
+  <img src="plots/ME_LCD.MT_LCD.stations_map.png" width="80.4%">
+</p>
+
+<p align="center">
+  <img src="plots/ME_MT.PDF.TMP_P0_L103_GLC0.model_vs_obs_bias_at_obs_locs.png" width="40%">
+  <img src="plots/ME_MT.PDF.TMP_P0_L103_GLC0.model_vs_obs_rmse_at_obs_locs.png" width="40%">
+</p>
 ## Command-line interface (CLI)
 
 ### `analyze-hrrr-vs-observations`
@@ -112,7 +122,6 @@ analyze-hrrr-vs-observations 2020 1 1 2020 12 31 0 12 conus data/ TMP_P0_L103_GL
 
     - NetCDF file containing HRRR-versus-observation statistics time series.  
     - Diagnostic plots (bias, RMSE, correlation) saved in the output directory.  
-    - Optional in-memory DataFrame for further analysis.
 
 ### Module `arotake.interpolation`  
 
@@ -124,8 +133,14 @@ analyze-hrrr-vs-observations 2020 1 1 2020 12 31 0 12 conus data/ TMP_P0_L103_GL
 
 ####  Functions
 
-  - `plot_df_timeseries`: Plots one figure per statistic by overlaying multiple DataFrames and saves PNG files with consistent naming conventions.
   - `plot_locations_conus`: Creates a map of observation locations over the contiguous U.S. in Lambert Conformal projection.
+
+  - `plot_evaluation_time_series`: Loads one or more Arotake model-vs-observation NetCDF dataset files, generates time series plots, and saves them as PNGs.
+
+  - `plot_evaluation_pdf`: Loads one or more Arotake model-vs-observation NetCDF dataset files, computes kernel-density estimates (Gaussian KDE) of the probability density, generates probability density plots, and saves them as PNGs.
+
+  - `plot_df_timeseries`: Plots one figure per statistic by overlaying multiple DataFrames and saves PNG files with consistent naming conventions.
+
 
 ## Development
 
