@@ -616,8 +616,8 @@ def plot_evaluation_time_series(
     model_vs_obs_files: list[Path],
     plot_dir: Path,
     title: 'str | None' = None,
-    t_min: 'object | None' = None,
-    t_max: 'object | None' = None,
+    t_min: 'datetime | None' = None,
+    t_max: 'datetime | None' = None,
     x_size: 'float | None' = None,
     y_size: 'float | None' = None,
     colors: 'list[object] | None' = None,
@@ -642,9 +642,8 @@ def plot_evaluation_time_series(
     title : str | None, optional
         Figure title applied to all plots.
 
-    t_min, t_max : object | None, optional
-        X-axis (time) limits passed through to the plotting backend. Accepts datetime-like or
-        numeric values, depending on what ``plotting.line_plot_1d`` supports.
+    t_min, t_max : datetime.datetime | None, optional
+        X-axis (time) limits passed through to the plotting backend.
 
     x_size, y_size : float | None, optional
         Figure size in inches for width and height, respectively.
@@ -826,9 +825,9 @@ def plot_evaluation_time_series(
         data = [ds[var_name] for ds in dss]
 
         if t_min is None:
-            t_min = np.min([np.min(t) for t in time])
+            t_min = min([min(t) for t in time])
         if t_max is None:
-            t_max = np.max([np.max(t) for t in time])
+            t_max = max([max(t) for t in time])
 
         y_min = None
         y_max = None
