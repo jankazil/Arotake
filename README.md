@@ -24,7 +24,7 @@ The workflow is shown in the [Arotake Demo](https://github.com/jankazil/Arotake/
 - Download and process HRRR forecast data
 - Specify LCD v2 observation parameters (analysis period, analysis regions)  
 - Download and process LCD v2 data
-- Evaluate the HRRR forecast against the LCD v2 observations. This creates and saves time series as netCDF files creates plots, for each analysis region, of the model bias, rmse, correlation with observations, etc.  
+- Evaluate the HRRR forecast against the LCD v2 observations. This creates and saves time series as netCDF files and creates plots, for each analysis region, of the model bias, rmse, correlation with observations, etc.  
 - Create a plot with the map of the LCD v2 observation locations.  
 - Create time series and probability density functions plots of the model bias, rmse, correlation with observations, etc., for all analysis regions concurrently.  
 
