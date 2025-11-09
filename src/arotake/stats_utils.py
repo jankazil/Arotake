@@ -303,9 +303,9 @@ class Model2DRegionalStatisticsTimeSeries:
         self.model_region_std.var_name = 'model_std'
         self.model_region_var.var_name = 'model_var'
 
-        self.model_region_mean.description = self.model_name[0] + ' mean'
-        self.model_region_std.description = self.model_name[0] + ' std. dev.'
-        self.model_region_var.description = self.model_name[0] + ' variance'
+        self.model_region_mean.description = 'Model mean'
+        self.model_region_std.description = 'Model std. dev.'
+        self.model_region_var.description = 'Model variance'
 
         # Set other instance variables
 
@@ -600,6 +600,10 @@ class Model2DRegionalStatisticsTimeSeries:
         ds[self.model_region_std.var_name].attrs['long_name'] = self.model_region_std.description
         ds[self.model_region_var.var_name].attrs['long_name'] = self.model_region_var.description
 
+        ds[self.model_region_mean.var_name].attrs['description'] = 'time series'
+        ds[self.model_region_std.var_name].attrs['description'] = 'time series'
+        ds[self.model_region_var.var_name].attrs['description'] = 'time series'
+
         ds.attrs['model'] = self.model_name[0]
         ds.attrs['model_variable'] = self.model_variable[0]
         ds.attrs['model_variable_long_name'] = self.model_variable_long_name[0]
@@ -730,14 +734,14 @@ class ModelVsObs2DStatisticsTimeSeries:
           matching time in "obs.time_series['UTC']" (UTC, timezone-aware).
         - Interpolates the model field to observation locations using
           "arotake.interpolation.model_2D_interpolate".
-        - Identifies reporting vs non-reporting locations via NaN screening of the
+        - Identifies reporting vs non-reporting observation locations via NaN screening of the
           observation field at the matched time.
         - Computes:
-            * Model stats at reporting locations: mean, std, var.
-            * Observation stats at reporting locations: mean, std, var (NaN if none report).
-            * Model-obs metrics at reporting locations: bias, RMSE, Pearson r
+            * Model stats at reporting observation locations: mean, std, var.
+            * Observation stats at reporting observation locations: mean, std, var (NaN if none report).
+            * Model-obs metrics at reporting observation locations: bias, RMSE, Pearson r
               (NaN if none report).
-            * Coverage: counts of reporting/not-reporting locations and fraction not reporting.
+            * Coverage: counts of reporting/not-reporting observation locations and fraction not reporting.
         - Stores values and metadata in list-derived series. If any required parameter
           is "None", initializes an empty container.
 
@@ -1025,18 +1029,18 @@ class ModelVsObs2DStatisticsTimeSeries:
         self.model_forecast_init_time.description = 'forecast initialization time (UTC)'
         self.model_forecast_lead_time.description = 'forecast lead time'
         self.model_forecast_time.description = 'forecast time'
-        self.model_mean.description = self.model_name[0] + ' mean at reporting ' + self.obs_name[0] + ' locations'
-        self.model_std.description = self.model_name[0] + ' std. dev. at reporting ' + self.obs_name[0] + ' locations'
-        self.model_var.description = self.model_name[0] + ' variance at reporting ' + self.obs_name[0] + ' locations'
-        self.obs_mean.description = self.obs_name[0] + ' mean at reporting locations'
-        self.obs_std.description = self.obs_name[0] + ' std. dev. at reporting locations'
-        self.obs_var.description = self.obs_name[0] + ' variance at reporting locations'
-        self.model_bias.description = self.model_name[0] + '-' + self.obs_name[0] + ' bias at reporting locations'
-        self.model_rmse.description = self.model_name[0] + '-' + self.obs_name[0] + ' RMSE at reporting locations'
-        self.model_r_corr.description = self.model_name[0] + '-' + self.obs_name[0] + ' correlation at reporting locations'
-        self.loc_rep_n.description = 'number of reporting ' + self.obs_name[0] + ' locations'
-        self.loc_notrep_n.description = 'number of not reporting ' + self.obs_name[0] + ' locations'
-        self.loc_notrep_frac.description = 'fraction of not reporting ' + self.obs_name[0] + ' locations'
+        self.model_mean.description = 'Model mean at reporting observation locations'
+        self.model_std.description = 'Model std. dev. at reporting observation locations'
+        self.model_var.description = 'Model variance at reporting observation locations'
+        self.obs_mean.description = 'Observations mean at reporting observation locations'
+        self.obs_std.description = 'Observations std. dev. at reporting observation locations'
+        self.obs_var.description = 'Observations variance at reporting observation locations'
+        self.model_bias.description = 'Model-observation bias at reporting observation locations'
+        self.model_rmse.description = 'Model-observation RMSE at reporting observation locations'
+        self.model_r_corr.description = 'Model-observation correlation at reporting observation locations'
+        self.loc_rep_n.description = 'Number of reporting observation locations'
+        self.loc_notrep_n.description = 'Number of not reporting observation locations'
+        self.loc_notrep_frac.description = 'Fraction of not reporting observation locations'
 
         return
 
@@ -1451,6 +1455,19 @@ class ModelVsObs2DStatisticsTimeSeries:
         ds[self.loc_rep_n.var_name].attrs['long_name'] = self.loc_rep_n.description
         ds[self.loc_notrep_n.var_name].attrs['long_name'] = self.loc_notrep_n.description
         ds[self.loc_notrep_frac.var_name].attrs['long_name'] = self.loc_notrep_frac.description
+
+        ds[self.model_mean.var_name].attrs['description'] = 'time series'
+        ds[self.model_std.var_name].attrs['description'] = 'time series'
+        ds[self.model_var.var_name].attrs['description'] = 'time series'
+        ds[self.obs_mean.var_name].attrs['description'] = 'time series'
+        ds[self.obs_std.var_name].attrs['description'] = 'time series'
+        ds[self.obs_var.var_name].attrs['description'] = 'time series'
+        ds[self.model_bias.var_name].attrs['description'] = 'time series'
+        ds[self.model_rmse.var_name].attrs['description'] = 'time series'
+        ds[self.model_r_corr.var_name].attrs['description'] = 'time series'
+        ds[self.loc_rep_n.var_name].attrs['description'] = 'time series'
+        ds[self.loc_notrep_n.var_name].attrs['description'] = 'time series'
+        ds[self.loc_notrep_frac.var_name].attrs['description'] = 'time series'
 
         ds.attrs['model'] = self.model_name[0]
         ds.attrs['model_variable'] = self.model_variable[0]
