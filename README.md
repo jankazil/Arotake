@@ -34,7 +34,7 @@ Requirements: Jupyter kernel with the following packages installed:
 - [`hrrr-data`](https://github.com/jankazil/hrrr-data)  
 - [`lcd-data`](https://github.com/jankazil/lcd-data)
 
-### Sample output - HRRR 32 h forecast 2 m temperature (K) bias and RMSE vs LCD v2, RTO/ISO regions, 2021-2024
+### HRRR 32 h forecast 2 m temperature bias and RMSE vs LCD v2, RTO/ISO regions, 2021-2024
 
 <p align="center">
   <img src="plots/CAISO_LCD.ERCOT_LCD.ISONE_LCD.MISO_LCD.NYISO_LCD.PJM_LCD.SPP_LCD.stations_map.png" width="100%">
