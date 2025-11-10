@@ -34,15 +34,12 @@ Requirements: Jupyter kernel with the following packages installed:
 - [`hrrr-data`](https://github.com/jankazil/hrrr-data)  
 - [`lcd-data`](https://github.com/jankazil/lcd-data)
 
-### Sample output
+### Sample output - HRRR 32 h forecast 2 m temperature (K) bias and RMSE vs LCD v2, RTO/ISO regions, 2021-2024
 
 <p align="center">
-  <img src="plots/ME_LCD.MT_LCD.stations_map.png" width="80.4%">
-</p>
-
-<p align="center">
-  <img src="plots/ME_MT.PDF.TMP_P0_L103_GLC0.model_vs_obs_bias_at_obs_locs.png" width="40%">
-  <img src="plots/ME_MT.PDF.TMP_P0_L103_GLC0.model_vs_obs_rmse_at_obs_locs.png" width="40%">
+  <img src="plots/CAISO_LCD.ERCOT_LCD.ISONE_LCD.MISO_LCD.NYISO_LCD.PJM_LCD.SPP_LCD.stations_map.png" width="100%">
+  <img src="plots/CAISO_ERCOT_ISONE_MISO_NYISO_PJM_SPP.PDF.TMP_P0_L103_GLC0.model_vs_obs_bias_at_obs_locs.png" width="100%">
+  <img src="plots/CAISO_ERCOT_ISONE_MISO_NYISO_PJM_SPP.PDF.TMP_P0_L103_GLC0.model_vs_obs_rmse_at_obs_locs.png" width="100%">
 </p>
 
 ## Command-line interface (CLI)
