@@ -32,7 +32,7 @@ Requirements: Jupyter kernel with the following packages installed:
 
 - [`Arotake`](https://github.com/jankazil/Arotake)  
 - [`hrrr-data`](https://github.com/jankazil/hrrr-data)  
-- [`lcd-data`](https://github.com/jankazil/lcd-data)
+- [`lcd-v2-data`](https://github.com/jankazil/lcd-v2-data)
 
 ### Sample results
 
@@ -52,7 +52,7 @@ HRRR 32 h forecast 2 m temperature bias and RMSE vs LCD v2, RTO/ISO regions, 202
 
 Compares HRRR forecasts with hourly surface observations, computes time series of model-observation statistics, and generates plots summarizing the results.  
 
-This tool supports both ISD-Lite and LCDv2 observation datasets, provided as NetCDF files (generated, e.g., using [`isd-lite-data`](https://github.com/jankazil/isd-lite-data) or [`lcd-data`](https://github.com/jankazil/lcd-data)).
+This tool supports both ISD-Lite and LCDv2 observation datasets, provided as NetCDF files (generated, e.g., using [`isd-lite-data`](https://github.com/jankazil/isd-lite-data) or [`lcd-v2-data`](https://github.com/jankazil/lcd-v2-data)).
 
 **Usage**
 
