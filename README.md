@@ -90,7 +90,7 @@ where:
 **Example**
 
 ```bash
-analyze-hrrr-vs-observations 2020 1 1 2020 12 31 0 12 conus data/ TMP_P0_L103_GLC0 ERCOT.2024-2024.nc T results/
+analyze-hrrr-vs-observations 2021 1 1 2021 12 31 0 12 conus data/ TMP_P0_L103_GLC0 ERCOT.2020-2025.nc T results/
 
 ```
 
