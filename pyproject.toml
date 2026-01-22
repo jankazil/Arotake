@@ -26,7 +26,7 @@ dependencies = [
   "regionmask",
   "scipy",
   "xarray",
-  "xesmf",
+  "xesmf>=0.7",
 ]
 
 [project.scripts]
