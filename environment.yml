@@ -1,14 +1,18 @@
 name: arotake
 channels:
   - conda-forge
+  - jan.kazil
 dependencies:
-  - python=3.11
+  # Core interpreter and package-management tools.
+  - python>=3.11,<=3.12.9
   - pip
-  - pipreqs
-  - pre-commit
-  - ruff
-  - mypy
   - mamba
+
+  # Build-system requirements from pyproject.toml.
+  - setuptools>=77
+  - wheel
+
+  # Runtime dependencies.
   - cartopy
   - cftime
   - geopandas
@@ -20,13 +24,22 @@ dependencies:
   - pandas
   - proj
   - pyproj
-  - regionmask
+  - regionmask>=0.13
   - scipy
   - xarray
   - xesmf>=0.7
+  - hrrr-data
+  - lcd-v2-data
+
+  # Development tooling, kept here because setup-dev-env.sh installs .[dev] with --no-deps.
+  - pytest
+  - pytest-cov
+  - mypy
+  - ruff
+  - pre-commit
+
+  # Jupyter support.
   - jupyter_client
   - jupyter_core
   - notebook
   - ipykernel
-  - pip:
-      - git+https://github.com/jankazil/Arotake

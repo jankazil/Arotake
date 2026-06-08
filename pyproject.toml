@@ -16,19 +16,18 @@ dependencies = [
   "cftime",
   "geopandas",
   "h5netcdf",
-  "libnetcdf",
   "matplotlib",
   "netcdf4",
   "numpy",
   "pandas",
-  "proj",
   "pyproj",
-  "regionmask",
+  "regionmask>=0.13",
   "scipy",
   "xarray",
   "xesmf>=0.7",
+  "hrrr-data",
+  "lcd-v2-data",
 ]
-
 [project.scripts]
 analyze-hrrr-vs-observations = "arotake.analyze_hrrr_vs_observations:main" # Connects name of executable in $PATH to the python module containing main()
 
@@ -47,7 +46,7 @@ include = ["arotake"]
 
 [tool.ruff]
 line-length = 128
-target-version = "py310"
+target-version = "py311"
 extend-exclude = [
     "dist",
     "build",
