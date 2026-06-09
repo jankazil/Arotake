@@ -290,8 +290,8 @@ else
     conda create -y -n "$BUILD_ENV_NAME" -c conda-forge conda-build anaconda-client
 fi
 
-ARTIFACT="$(conda run -n "$BUILD_ENV_NAME" conda-build -c conda-forge --python "$PYTHON_VERSION" "$RECIPE_DIR" --output)"
-conda run -n "$BUILD_ENV_NAME" conda-build -c conda-forge --python "$PYTHON_VERSION" "$RECIPE_DIR"
+ARTIFACT="$(conda run -n "$BUILD_ENV_NAME" conda-build -c jan.kazil -c conda-forge --python "$PYTHON_VERSION" "$RECIPE_DIR" --output)"
+conda run -n "$BUILD_ENV_NAME" conda-build -c jan.kazil -c conda-forge --python "$PYTHON_VERSION" "$RECIPE_DIR"
 
 if [[ ! -f "$ARTIFACT" ]]; then
     echo "Error: expected artifact not found: $ARTIFACT" >&2
