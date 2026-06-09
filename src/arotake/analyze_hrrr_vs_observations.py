@@ -92,7 +92,7 @@ Entry points
 
 import argparse
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import xarray as xr
@@ -448,8 +448,8 @@ def arg_parse(argv=None):
 
     args = parser.parse_args()
 
-    forecast_init_start_date = datetime(year=args.start_year, month=args.start_month, day=args.start_day, tzinfo=timezone.utc)
-    forecast_init_end_date = datetime(year=args.end_year, month=args.end_month, day=args.end_day, tzinfo=timezone.utc)
+    forecast_init_start_date = datetime(year=args.start_year, month=args.start_month, day=args.start_day, tzinfo=UTC)
+    forecast_init_end_date = datetime(year=args.end_year, month=args.end_month, day=args.end_day, tzinfo=UTC)
     forecast_init_hour = args.forecast_init_hour
     forecast_lead_hour = args.forecast_lead_hour
     hrrr_region = args.hrrr_region

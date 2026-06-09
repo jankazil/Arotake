@@ -42,7 +42,7 @@ Dependencies and expectations
   in the provided GeoDataFrame. CRS is aligned to the union GeoDataFrame when needed.
 '''
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import geopandas as gp
@@ -268,7 +268,7 @@ class Model2DRegionalStatisticsTimeSeries:
         # Identify the model initialization time, forecast lead time, and forecast time
 
         self.model_forecast_init_time = datetime.strptime(model_ds[model_variable].attrs['initial_time'], '%m/%d/%Y (%H:%M)')
-        self.model_forecast_init_time = self.model_forecast_init_time.replace(tzinfo=timezone.utc)
+        self.model_forecast_init_time = self.model_forecast_init_time.replace(tzinfo=UTC)
 
         assert model_ds[model_variable].attrs['forecast_time_units'] == 'hours', 'model forecast lead time units must be hours'
 
@@ -509,6 +509,36 @@ class Model2DRegionalStatisticsTimeSeries:
             'description': self.model_region_var.description,
         }
 
+        # Store the same metadata at the DataFrame level. Pandas does not
+        # reliably preserve Series.attrs across repeated DataFrame column access.
+
+        df.attrs['column_attrs'] = {
+            self.model_forecast_time.var_name: {
+                'units': self.model_forecast_time.units[0],
+                'description': self.model_forecast_time.description,
+            },
+            self.model_forecast_init_time.var_name: {
+                'units': self.model_forecast_init_time.units[0],
+                'description': self.model_forecast_init_time.description,
+            },
+            self.model_forecast_lead_time.var_name: {
+                'units': self.model_forecast_lead_time.units[0],
+                'description': self.model_forecast_lead_time.description,
+            },
+            self.model_region_mean.var_name: {
+                'units': self.model_region_mean.units[0],
+                'description': self.model_region_mean.description,
+            },
+            self.model_region_std.var_name: {
+                'units': self.model_region_std.units[0],
+                'description': self.model_region_std.description,
+            },
+            self.model_region_var.var_name: {
+                'units': self.model_region_var.units[0],
+                'description': self.model_region_var.description,
+            },
+        }
+
         # Global attributes
 
         df.attrs['model'] = self.model_name[0]
@@ -556,7 +586,7 @@ class Model2DRegionalStatisticsTimeSeries:
 
         # Ensure time coordinate is datetime64[ns] and timezone-naive UTC
         coordinates['time'] = np.array(
-            [dt.astimezone(timezone.utc).replace(tzinfo=None) for dt in self.model_forecast_time], dtype='datetime64[ns]'
+            [dt.astimezone(UTC).replace(tzinfo=None) for dt in self.model_forecast_time], dtype='datetime64[ns]'
         )
 
         # Variables
@@ -565,7 +595,7 @@ class Model2DRegionalStatisticsTimeSeries:
 
         # Ensure model initialization time is datetime64[ns] and timezone-naive UTC
         init_time = np.array(
-            [dt.astimezone(timezone.utc).replace(tzinfo=None) for dt in self.model_forecast_init_time], dtype='datetime64[ns]'
+            [dt.astimezone(UTC).replace(tzinfo=None) for dt in self.model_forecast_init_time], dtype='datetime64[ns]'
         )
         data_vars[self.model_forecast_init_time.var_name] = ('time', init_time)
 
@@ -885,7 +915,7 @@ class ModelVsObs2DStatisticsTimeSeries:
         # Identify the model initialization time, forecast lead time, and forecast time
 
         self.model_forecast_init_time = datetime.strptime(model_data.attrs['initial_time'], '%m/%d/%Y (%H:%M)')
-        self.model_forecast_init_time = self.model_forecast_init_time.replace(tzinfo=timezone.utc)
+        self.model_forecast_init_time = self.model_forecast_init_time.replace(tzinfo=UTC)
 
         assert model_data.attrs['forecast_time_units'] == 'hours', 'model forecast lead time units must be hours'
 
@@ -1333,6 +1363,72 @@ class ModelVsObs2DStatisticsTimeSeries:
             'description': self.loc_notrep_frac.description,
         }
 
+        # Store the same metadata at the DataFrame level. Pandas does not
+        # reliably preserve Series.attrs across repeated DataFrame column access.
+
+        df.attrs['column_attrs'] = {
+            self.model_forecast_time.var_name: {
+                'units': self.model_forecast_time.units[0],
+                'description': self.model_forecast_time.description,
+            },
+            self.model_forecast_init_time.var_name: {
+                'units': self.model_forecast_init_time.units[0],
+                'description': self.model_forecast_init_time.description,
+            },
+            self.model_forecast_lead_time.var_name: {
+                'units': self.model_forecast_lead_time.units[0],
+                'description': self.model_forecast_lead_time.description,
+            },
+            self.model_mean.var_name: {
+                'units': self.model_mean.units[0],
+                'description': self.model_mean.description,
+            },
+            self.model_std.var_name: {
+                'units': self.model_std.units[0],
+                'description': self.model_std.description,
+            },
+            self.model_var.var_name: {
+                'units': self.model_var.units[0],
+                'description': self.model_var.description,
+            },
+            self.obs_mean.var_name: {
+                'units': self.obs_mean.units[0],
+                'description': self.obs_mean.description,
+            },
+            self.obs_std.var_name: {
+                'units': self.obs_std.units[0],
+                'description': self.obs_std.description,
+            },
+            self.obs_var.var_name: {
+                'units': self.obs_var.units[0],
+                'description': self.obs_var.description,
+            },
+            self.model_bias.var_name: {
+                'units': self.model_bias.units[0],
+                'description': self.model_bias.description,
+            },
+            self.model_rmse.var_name: {
+                'units': self.model_rmse.units[0],
+                'description': self.model_rmse.description,
+            },
+            self.model_r_corr.var_name: {
+                'units': self.model_r_corr.units[0],
+                'description': self.model_r_corr.description,
+            },
+            self.loc_rep_n.var_name: {
+                'units': self.loc_rep_n.units[0],
+                'description': self.loc_rep_n.description,
+            },
+            self.loc_notrep_n.var_name: {
+                'units': self.loc_notrep_n.units[0],
+                'description': self.loc_notrep_n.description,
+            },
+            self.loc_notrep_frac.var_name: {
+                'units': self.loc_notrep_frac.units[0],
+                'description': self.loc_notrep_frac.description,
+            },
+        }
+
         # Global attributes
 
         df.attrs['model'] = self.model_name[0]
@@ -1385,7 +1481,7 @@ class ModelVsObs2DStatisticsTimeSeries:
 
         # Ensure time coordinate is datetime64[ns] and timezone-naive UTC
         coordinates['time'] = np.array(
-            [dt.astimezone(timezone.utc).replace(tzinfo=None) for dt in self.model_forecast_time], dtype='datetime64[ns]'
+            [dt.astimezone(UTC).replace(tzinfo=None) for dt in self.model_forecast_time], dtype='datetime64[ns]'
         )
 
         # Variables
@@ -1394,7 +1490,7 @@ class ModelVsObs2DStatisticsTimeSeries:
 
         # Ensure model initialization time is datetime64[ns] and timezone-naive UTC
         init_time = np.array(
-            [dt.astimezone(timezone.utc).replace(tzinfo=None) for dt in self.model_forecast_init_time], dtype='datetime64[ns]'
+            [dt.astimezone(UTC).replace(tzinfo=None) for dt in self.model_forecast_init_time], dtype='datetime64[ns]'
         )
         data_vars[self.model_forecast_init_time.var_name] = ('time', init_time)
 

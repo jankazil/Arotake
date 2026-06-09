@@ -49,6 +49,31 @@ from scipy.stats import gaussian_kde
 matplotlib.use("Agg")  # Important to avoid runaway memory use upon creating plots repeatedly.
 
 
+def dataframe_column_attr(df: pd.DataFrame, column: str, attr: str) -> object:
+    '''
+    Return metadata for a DataFrame column.
+
+    Prefer DataFrame-level column metadata stored in
+    ``df.attrs['column_attrs'][column][attr]``. Fall back to the older
+    ``df[column].attrs[attr]`` storage used by earlier code.
+    '''
+
+    if 'column_attrs' in df.attrs:
+        try:
+            return df.attrs['column_attrs'][column][attr]
+        except KeyError:
+            pass
+
+    try:
+        return df[column].attrs[attr]
+    except KeyError as exc:
+        raise KeyError(
+            'Missing DataFrame column metadata: '
+            f"df.attrs['column_attrs'][{column!r}][{attr!r}], and "
+            f'missing Series.attrs[{attr!r}] for DataFrame column {column!r}'
+        ) from exc
+
+
 def plot_df_timeseries(plot_dir: Path, dfs: list[pd.DataFrame], legend_strings: list[str] = None) -> list[Path]:
     '''
     Plot one figure per statistic (per non-time column) by overlaying that statistic across
@@ -145,7 +170,9 @@ def plot_df_timeseries(plot_dir: Path, dfs: list[pd.DataFrame], legend_strings: 
         min_times.append(min(time))
         max_times.append(max(time))
 
-        forecast_valid_time_string = time.iloc[0].strftime("%H:%M:%S") + ' ' + time.attrs['units']
+        forecast_valid_time_string = (
+            time.iloc[0].strftime("%H:%M:%S") + ' ' + str(dataframe_column_attr(df, df.columns[0], 'units'))
+        )
 
         forecast_valid_time_strings.append(forecast_valid_time_string)
 
@@ -211,7 +238,12 @@ def plot_df_timeseries(plot_dir: Path, dfs: list[pd.DataFrame], legend_strings: 
         # ax.set_ylim(min(time_series),max(time_series))
 
         ax.set_xlabel('Forecast valid date')
-        ax.set_ylabel(time_series.attrs['description'] + ' (' + time_series.attrs['units'] + ')')
+        ax.set_ylabel(
+            str(dataframe_column_attr(df, column_label, 'description'))
+            + ' ('
+            + str(dataframe_column_attr(df, column_label, 'units'))
+            + ')'
+        )
 
         ax.legend(title=None)
 
