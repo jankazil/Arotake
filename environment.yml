@@ -15,10 +15,13 @@ dependencies:
   # Runtime dependencies.
   - cartopy
   - cftime
+  - esmf
+  - esmpy
   - geopandas
   - h5netcdf
   - libnetcdf
   - matplotlib
+  - ncl
   - netcdf4
   - numpy
   - pandas

@@ -14,9 +14,12 @@ authors = [{ name = "Jan Kazil" }]
 dependencies = [
   "cartopy",
   "cftime",
+  "esmf",
+  "esmpy",
   "geopandas",
   "h5netcdf",
   "matplotlib",
+  "ncl",
   "netcdf4",
   "numpy",
   "pandas",
