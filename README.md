@@ -144,6 +144,10 @@ analyze-hrrr-vs-observations 2021 1 1 2021 12 31 0 12 conus data/ TMP_P0_L103_GL
 
 ## Development
 
+### Code Development Commands
+
+- `make setup-dev-env` - Creates an editable conda development environment with all required dependencies.
+
 ### Code Quality and Testing Commands
 
 - `make fmt` - Runs `ruff format` to auto-format Python files.
@@ -151,6 +155,10 @@ analyze-hrrr-vs-observations 2021 1 1 2021 12 31 0 12 conus data/ TMP_P0_L103_GL
 - `make check` - Runs both formatting and linting.
 - `make type` - Runs `mypy` type checker in strict mode.
 - `make test` - Runs `pytest` with coverage reporting.
+
+### Code Publishing Commands
+
+- `make upload-anaconda` - Uploads the package to anaconda.org (credentials required)
 
 ## Name
 
