@@ -4,7 +4,7 @@ channels:
   - jan.kazil
 dependencies:
   # Core interpreter and package-management tools.
-  - python>=3.12,<=3.12.9
+  - python>=3.12
   - pip
   - mamba
 

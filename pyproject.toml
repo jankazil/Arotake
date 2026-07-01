@@ -7,7 +7,7 @@ name = "arotake"
 version = "2.1.20"
 description = "Arotake is a Python toolkit for evaluating meteorological forecast models against observations."
 readme = "README.md"
-requires-python = ">=3.12,<=3.12.9"
+requires-python = ">=3.12"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 authors = [{ name = "Jan Kazil" }]
