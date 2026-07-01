@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arotake"
-version = "2.1.20"
+version = "2.1.21"
 description = "Arotake is a Python toolkit for evaluating meteorological forecast models against observations."
 readme = "README.md"
 requires-python = ">=3.12"
