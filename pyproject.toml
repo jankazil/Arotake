@@ -24,7 +24,6 @@ dependencies = [
   "regionmask>=0.13",
   "scipy",
   "xarray",
-  "hrrr-data",
   "lcd-v2-data",
 ]
 [project.scripts]
