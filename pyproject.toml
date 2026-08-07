@@ -24,6 +24,7 @@ dependencies = [
   "regionmask>=0.13",
   "scipy",
   "xarray",
+  "xesmf>=0.9",
 ]
 [project.scripts]
 analyze-hrrr-vs-observations = "arotake.analyze_hrrr_vs_observations:main" # Connects name of executable in $PATH to the python module containing main()

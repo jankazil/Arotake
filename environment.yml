@@ -30,7 +30,7 @@ dependencies:
   - regionmask>=0.13
   - scipy
   - xarray
-  - xesmf>=0.7
+  - xesmf>=0.9
   - hrrr-data
   - lcd-v2-data
 
