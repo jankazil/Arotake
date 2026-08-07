@@ -4,9 +4,23 @@
 
 ## Installation
 
+### Conda/Mamba
+
 ```bash
 mamba install -c jan.kazil -c conda-forge Arotake
 ```
+
+### Jupyter
+
+If the Conda/Mamba environment in which **Arotake** was installed is not yet available as a Jupyter kernel, install the Jupyter dependencies and register the environment as a kernel:
+
+```bash
+mamba install -c conda-forge jupyter_client jupyter_core notebook ipykernel
+
+python -m ipykernel install --user --name "$CONDA_DEFAULT_ENV" --display-name "Python ($CONDA_DEFAULT_ENV)"
+```
+
+The kernel will then appear in Jupyter as `Python (<environment-name>)`.
 
 ## Overview
 
