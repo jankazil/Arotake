@@ -21,7 +21,6 @@ dependencies:
   - h5netcdf
   - libnetcdf
   - matplotlib
-  - ncl
   - netcdf4
   - numpy
   - pandas
