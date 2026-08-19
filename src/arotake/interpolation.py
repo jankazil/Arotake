@@ -2,16 +2,19 @@
 Interpolation utilities for geospatial model fields.
 
 This module provides:
-- model_2D_interpolate: Interpolates a 2-D variable from an xarray Dataset
-  onto arbitrary latitude/longitude points using bilinear regridding via
-  xESMF (xesmf.Regridder). To improve performance, the function caches the
-  regridder and reuses it when inputs have not changed.
+- model_2D_interpolate: Interpolates a variable from an xarray Dataset onto
+  arbitrary latitude/longitude points using bilinear regridding via xESMF
+  (xesmf.Regridder). The variable may have additional leading dimensions
+  before its two horizontal dimensions. To improve performance, the function
+  caches the regridder and reuses it when inputs have not changed.
 
 Design notes
 ------------
 - Input lats/lons must be 1-D, equal length, non-NaN, and within [-180, 180].
-- The model Dataset must provide a 2-D variable plus corresponding 2-D latitude
-  and longitude arrays (WGS84, degrees North/East).
+- The model Dataset must provide a variable with dimensions (..., y, x) plus
+  corresponding 2-D latitude and longitude arrays (y, x; WGS84, degrees
+  North/East). Interpolation is applied independently over any leading
+  dimensions.
 - Regridders are rebuilt only if the model grid or the interpolation locations
   differ from those cached in the last call.
 '''
@@ -23,10 +26,12 @@ import xesmf as xe  # Universal Regridder for Geospatial Data
 
 def model_2D_interpolate(
     model_ds: xr.Dataset, model_variable: str, model_lat_name: str, model_lon_name: str, lats: np.ndarray, lons: np.ndarray
-) -> np.ndarray:
+) -> xr.DataArray:
     '''
-    Interpolate a 2-D model variable to arbitrary latitude/longitude points
-    using bilinear regridding with xESMF.
+    Interpolate a model variable to arbitrary latitude/longitude points using
+    bilinear regridding with xESMF. The variable may have arbitrary leading
+    dimensions before its two horizontal dimensions; interpolation is applied
+    independently to every combination of the leading-dimension coordinates.
 
     Caching
     -------
@@ -41,10 +46,12 @@ def model_2D_interpolate(
     ----------
     model_ds : xarray.Dataset
         Dataset containing:
-        - 2-D data variable "model_variable" (y, x),
+        - data variable "model_variable" (..., y, x),
         - 2-D latitude variable "model_lat_name" (y, x),
         - 2-D longitude variable "model_lon_name" (y, x),
         with longitudes constrained to [-180, 180].
+        The horizontal dimensions must be the final two dimensions of the data
+        variable.
     model_variable : str
         Name of the variable in "model_ds" to interpolate.
     model_lat_name : str
@@ -60,10 +67,10 @@ def model_2D_interpolate(
 
     Returns
     -------
-    numpy.ndarray
-        Interpolated values of the model variable at the requested coordinates.
-        If the model variable has a time dimension, interpolation is performed
-        independently for each time step, returning a 2-D array.
+    xarray.DataArray
+        Interpolated values with dimensions (..., locations). Any leading
+        dimensions and their coordinates are retained; the two horizontal input
+        dimensions (y, x) are replaced by the output dimension "locations".
 
     Raises
     ------
@@ -138,8 +145,10 @@ def model_2D_interpolate(
         model_2D_interpolate._cached_lats = np.asarray(lats)
         model_2D_interpolate._cached_lons = np.asarray(lons)
 
-    # Interpolate the model data to the interpolation locations
+    # Interpolate the two rightmost, horizontal dimensions to the requested
+    # locations. xESMF applies the same interpolation independently over any
+    # additional leading dimensions and retains their coordinates.
 
-    model_data_interpolated = cached_model_regridder(model_ds[model_variable]).values
+    model_data_interpolated = cached_model_regridder(model_ds[model_variable])
 
     return model_data_interpolated
