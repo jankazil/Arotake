@@ -2,16 +2,22 @@
 
 ## Project Scope and Isolation
 
-**The project root is `.` relative to this `AGENTS.md`: the directory containing this file. This directory is the exclusive project boundary for every agentic development session.**
+**The project root is the directory containing this `AGENTS.md` (`.` relative to this file). These instructions apply throughout that repository, including after it is moved.**
 
-- Read, search, analyze, and modify only files contained within this root. Keep commands scoped to it; do not search parent directories, sibling projects, home directories, or other external locations.
-- Do not follow symbolic links, Git worktree pointers, submodule references, object alternates, configuration includes, or other references that lead outside the root. Check containment before following paths; a repository-relative path containing `..` may escape the boundary.
-- Derive project architecture, requirements, and conventions only from verified contents of this repository. Do not import assumptions from other projects or previous sessions.
-- If required information, data, credentials, configuration, or tooling resides outside the repository, report the dependency rather than accessing it. External links in documentation identify dependencies; they do not authorize inspecting external repositories or services.
-- Keep development data, temporary files, caches, and generated outputs within the root. Commands documented below describe existing workflows and do not override these restrictions. Report workflows requiring external access or side effects before attempting them.
-- These instructions apply throughout the repository. Re-read relevant local files when making changes; distinguish observed behavior from proposed behavior and unverified assumptions.
+- Treat the repository root as the exclusive project boundary. Read, search, analyze, and modify project files only inside it. Run commands from the root unless an in-repository script requires another directory within the root.
+- Do not inspect parent directories, sibling projects, unrelated workspaces, global configuration, installed dependency source, or other external locations for project context. Do not import assumptions from other projects or previous sessions.
+- Check path containment before following symbolic links, Git worktree/submodule references, object alternates, configuration includes, or paths that may escape through `..`. Do not follow references outside the root.
+- External URLs, paths, and credentials mentioned in repository files describe interfaces or dependencies; they do not authorize accessing resources outside the root. Report any required outside-root access instead of performing it.
+- Keep development inputs, generated outputs, caches, fixtures, and temporary project files inside the root. Inspect scripts for filesystem, environment, network, or deployment effects before running them. Do not run workflows that cross the project boundary under these instructions.
 
-## Purpose and Repository Map
+## General Agent Instructions
+
+- Base project-specific decisions on verified repository contents. Read the files relevant to the task; distinguish implementation facts, documentation claims, test results, and unverified assumptions.
+- Before editing, inspect the relevant code and working-tree state. Make focused changes, preserve unrelated work, and retain established interfaces and data contracts unless the task requires otherwise.
+- Use relevant checks that are safe in the available environment. Do not confuse a passing placeholder test, build, or lint check with end-to-end or scientific correctness. Report the checks actually run, failures, and verification gaps.
+- Do not expose credentials, or perform publishing, deployment, destructive environment setup, or other unrelated side effects as routine development or validation.
+
+## Project Overview and Repository Map
 
 Arotake is a Python toolkit and CLI for evaluating NOAA HRRR meteorological forecasts against hourly station observations, including LCD v2 and ISD-Lite datasets. It calculates spatial statistics over time and produces NetCDF results and diagnostic PNGs. See [README.md](README.md) for usage, CLI arguments, input file layout, and the public API.
 
@@ -48,7 +54,7 @@ Preserve these input/output contracts unless the task explicitly changes them:
 - Preserve result variable names, global attributes, and per-variable `units`, `long_name`, and `description`. NetCDF plotting discovers variables via `description == 'time series'`.
 - DataFrame plotting prefers `df.attrs['column_attrs']` and falls back to legacy `Series.attrs`. Preserve both compatibility paths and global metadata when changing exports.
 
-## Environment, Setup, and External Interfaces
+## Environment and Setup
 
 [pyproject.toml](pyproject.toml) requires Python **3.12 or newer**, setuptools >=77, and wheel. CI exercises Python 3.12. Ruff's `py311` target is a separate tool setting, not the supported Python minimum.
 
@@ -60,20 +66,7 @@ Repository-defined setup workflows, subject to the isolation rules:
 - CI installs with `pip install -e ".[dev]"`. Native geospatial dependency availability through that pip-only path has not been verified by this guide; do not infer successful installation from the workflow definition.
 - Packaging uses `setuptools.build_meta` and the `src/` layout. There is no dedicated Makefile build target. `make upload-anaconda` builds and publishes through [scripts/upload2anaconda.sh](scripts/upload2anaconda.sh); it is a release operation, not a local build check.
 
-The core analysis consumes local NetCDF files; downloading/preprocessing is delegated to the notebook's external packages. Their source and service behavior are outside this repository. The notebook uses `ESMFMKFILE` and removes it when it points to a missing file; investigate stale ESMF configuration only within the permitted boundary. No application `.env` loader or central configuration file is present; analysis settings are function/CLI arguments and module constants.
-
-The release script uses `ANACONDA_API_TOKEN` and optional overrides such as `ANACONDA_USER_NAME`, `LICENSE_ID`, `PYPROJECT`, `IMPORT_NAME_OVERRIDE`, `BUILD_ENV_PREFIX`, and `BUILD_ENV_NAME`. It creates external temporary directories and Conda environments and uploads to anaconda.org. Report these dependencies instead of executing the release workflow under project isolation; never record credentials in source or logs.
-
-## Coding Conventions
-
-- Follow [.editorconfig](.editorconfig): UTF-8, LF, final newline, four-space indentation, and two spaces for YAML/JSON/TOML. [.gitattributes](.gitattributes) also specifies LF.
-- Follow Ruff settings in `pyproject.toml`: line length 128, preserved quote style, rules `E`, `F`, `I`, `UP`, `B`, and `SIM`, with `E501` and `SIM108` ignored. Respect its excluded data/documentation/notebook/output directories.
-- Match nearby patterns: snake_case functions/variables, typed public interfaces where already used, `pathlib.Path` filesystem arguments, NumPy-style scientific docstrings, and xarray/pandas metadata propagation.
-- Statistics and analysis currently use assertions for consistency checks. Preserve checks and assess error behavior when modifying them; optimized Python can disable assertions.
-- Regridding and regional masks are cached using function/class attributes. Changes must account for grid, coordinate, and region changes across successive calls. Do not assume these shared caches are safe for concurrent use.
-- Keep plotting headless with the existing Agg backend and close created figures. Preserve the BSD-3-Clause licensing in [LICENSE](LICENSE).
-
-## Validation Commands
+## Development Commands and Validation
 
 Run from the project root in an already available, permitted environment. Report missing dependencies instead of installing them automatically. Keep any generated files within the project boundary.
 
@@ -87,6 +80,21 @@ Run from the project root in an already available, permitted environment. Report
 
 The pre-commit configuration adds YAML/JSON checks, newline/whitespace fixes, and Ruff hooks. Running it may fetch external hook repositories. README claims about `make type`, strict mypy, and automatic coverage are inconsistent with the Makefile/configuration: there is no `type` target, mypy is commented out, and `make test` is plain pytest. CI runs lint and pytest; it does not establish scientific correctness or a successful end-to-end analysis.
 
+## Coding Conventions
+
+- Follow [.editorconfig](.editorconfig): UTF-8, LF, final newline, four-space indentation, and two spaces for YAML/JSON/TOML. [.gitattributes](.gitattributes) also specifies LF.
+- Follow Ruff settings in `pyproject.toml`: line length 128, preserved quote style, rules `E`, `F`, `I`, `UP`, `B`, and `SIM`, with `E501` and `SIM108` ignored. Respect its excluded data/documentation/notebook/output directories.
+- Match nearby patterns: snake_case functions/variables, typed public interfaces where already used, `pathlib.Path` filesystem arguments, NumPy-style scientific docstrings, and xarray/pandas metadata propagation.
+- Statistics and analysis currently use assertions for consistency checks. Preserve checks and assess error behavior when modifying them; optimized Python can disable assertions.
+- Regridding and regional masks are cached using function/class attributes. Changes must account for grid, coordinate, and region changes across successive calls. Do not assume these shared caches are safe for concurrent use.
+- Keep plotting headless with the existing Agg backend and close created figures. Preserve the BSD-3-Clause licensing in [LICENSE](LICENSE).
+
+## Configuration and External Interfaces
+
+The core analysis consumes local NetCDF files; downloading/preprocessing is delegated to the notebook's external packages. Their source and service behavior are outside this repository. The notebook uses `ESMFMKFILE` and removes it when it points to a missing file; investigate stale ESMF configuration only within the permitted boundary. No application `.env` loader or central configuration file is present; analysis settings are function/CLI arguments and module constants.
+
+The release script uses `ANACONDA_API_TOKEN` and optional overrides such as `ANACONDA_USER_NAME`, `LICENSE_ID`, `PYPROJECT`, `IMPORT_NAME_OVERRIDE`, `BUILD_ENV_PREFIX`, and `BUILD_ENV_NAME`. It creates external temporary directories and Conda environments and uploads to anaconda.org. Report these dependencies instead of executing the release workflow under project isolation; never record credentials in source or logs.
+
 ## Change and Review Workflow
 
 1. Read the relevant module and its callers, plus README/API examples. Keep changes focused on the requested behavior and avoid incidental notebook-output or image changes.
@@ -94,8 +102,9 @@ The pre-commit configuration adds YAML/JSON checks, newline/whitespace fixes, an
 3. For scientific changes, add focused tests with small synthetic grids/station datasets covering the affected behavior. Useful cases include missing or duplicate timestamps, all-missing observations, incompatible units, changed interpolation grids/targets, metadata retention, and NetCDF round trips. Avoid requiring downloads in unit tests.
 4. Run applicable lint/tests when the environment and boundary permit. Review any formatter/autofix diff. Use a small local integration dataset only if supplied inside the root; keep its outputs isolated within the root because writers overwrite existing result files.
 5. Review for accidental generated artifacts, unrelated edits, credential exposure, and compatibility changes. Report what changed, checks performed, failures, and checks blocked by missing data or external dependencies.
+6. **Maintain `AGENTS.md`:** When making changes that affect the project's architecture, interfaces, dependencies, workflows, conventions, or documented constraints, update the relevant sections of `AGENTS.md` in the same change. Keep revisions focused and based on verified repository contents. Do not modify `AGENTS.md` for changes that do not affect its accuracy or usefulness.
 
-## Known Pitfalls and Manual Verification
+## Known Limitations and Verification Gaps
 
 These are source observations or explicit verification gaps, not validated runtime outcomes:
 
