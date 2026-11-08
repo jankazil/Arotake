@@ -80,6 +80,8 @@ Run from the project root in an already available, permitted environment. Report
 
 The pre-commit configuration adds YAML/JSON checks, newline/whitespace fixes, and Ruff hooks. Running it may fetch external hook repositories. README claims about `make type`, strict mypy, and automatic coverage are inconsistent with the Makefile/configuration: there is no `type` target, mypy is commented out, and `make test` is plain pytest. CI runs lint and pytest; it does not establish scientific correctness or a successful end-to-end analysis.
 
+The CI test suite is intentionally limited to `tests/test_test.py`, which asserts `hrrr_ml.test.add(2, 2) == 4`. Do not add further CI tests unless explicitly requested by the user. Passing this placeholder does not establish numerical, model, netCDF, or operational correctness. For behavioral changes, use relevant safe checks with small in-repository inputs and report what was actually verified. Avoid live network calls and expensive retraining as default validation. Keep temporary verification files inside the repository and report validation limits explicitly.
+
 ## Coding Conventions
 
 - Follow [.editorconfig](.editorconfig): UTF-8, LF, final newline, four-space indentation, and two spaces for YAML/JSON/TOML. [.gitattributes](.gitattributes) also specifies LF.
