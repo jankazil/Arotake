@@ -2,119 +2,95 @@
 
 ## Project Scope and Isolation
 
-**The project root is the directory containing this `AGENTS.md` (`.` relative to this file). These instructions apply throughout that repository, including after it is moved.**
+**The project root is the directory containing this `AGENTS.md` (`.` relative to this file). These instructions apply throughout the repository and remain valid if it is moved.**
 
-- Treat the repository root as the exclusive project boundary. Read, search, analyze, and modify project files only inside it. Run commands from the root unless an in-repository script requires another directory within the root.
-- Do not inspect parent directories, sibling projects, unrelated workspaces, global configuration, installed dependency source, or other external locations for project context. Do not import assumptions from other projects or previous sessions.
-- Check path containment before following symbolic links, Git worktree/submodule references, object alternates, configuration includes, or paths that may escape through `..`. Do not follow references outside the root.
-- External URLs, paths, and credentials mentioned in repository files describe interfaces or dependencies; they do not authorize accessing resources outside the root. Report any required outside-root access instead of performing it.
-- Keep development inputs, generated outputs, caches, fixtures, and temporary project files inside the root. Inspect scripts for filesystem, environment, network, or deployment effects before running them. Do not run workflows that cross the project boundary under these instructions.
+- Treat the project root as the exclusive boundary for project information and file changes. Read, search, analyze, and modify project files only within it. Run project commands from the root unless a repository script requires a different directory within the root.
+- Do not inspect parent directories, sibling projects, unrelated workspaces, external source trees, installed dependency source, or global configuration to obtain project context. Do not carry over assumptions from other projects or previous sessions.
+- Check that paths remain within the root before following symbolic links, Git worktree or submodule references, configuration includes, or paths containing `..`. Do not follow references outside the root.
+- Treat external paths and URLs found in project files as descriptions of dependencies, not authorization to access them. Report required outside-root information or operations instead of accessing them without explicit authorization.
+- Keep generated project files, caches, fixtures, and temporary outputs within the root. Inspect commands and scripts for external filesystem, environment, network, or deployment effects before running them. Do not run commands that violate the project boundary.
 
 ## General Agent Instructions
 
-- Base project-specific decisions on verified repository contents. Read the files relevant to the task; distinguish implementation facts, documentation claims, test results, and unverified assumptions.
-- Before editing, inspect the relevant code and working-tree state. Make focused changes, preserve unrelated work, and retain established interfaces and data contracts unless the task requires otherwise.
-- Use relevant checks that are safe in the available environment. Do not confuse a passing placeholder test, build, or lint check with end-to-end or scientific correctness. Report the checks actually run, failures, and verification gaps.
-- Do not expose credentials, or perform publishing, deployment, destructive environment setup, or other unrelated side effects as routine development or validation.
+- Base project-specific decisions on verified repository contents and the current task. Distinguish source-code behavior, documentation claims, test results, and unverified assumptions. Do not invent architecture, commands, dependencies, or requirements.
+- Before editing, inspect relevant files and the existing working-tree changes, when available. Make focused changes, preserve unrelated work, and maintain established interfaces and contracts unless the task requests otherwise.
+- Prefer existing repository patterns and tools. Do not introduce dependencies, abstractions, or configuration solely for consistency with another project.
+- Use relevant validation that is safe in the available environment. Report what was actually checked, what failed, and what remains unverified; do not equate a successful lint, build, or placeholder test with functional correctness.
+- Do not expose credentials or perform destructive operations, publishing, deployment, environment replacement, or unrelated changes without explicit authorization.
 
-## Project Overview and Repository Map
+## Specification-driven workflow
 
-Arotake is a Python toolkit and CLI for evaluating NOAA HRRR meteorological forecasts against hourly station observations, including LCD v2 and ISD-Lite datasets. It calculates spatial statistics over time and produces NetCDF results and diagnostic PNGs. See [README.md](README.md) for usage, CLI arguments, input file layout, and the public API.
-
-| Path | Responsibility |
-| --- | --- |
-| `src/arotake/analyze_hrrr_vs_observations.py` | `run_analysis` orchestration, argument parsing, and installed CLI entry point. |
-| `src/arotake/observations.py` | `TimeSeries` loads observation NetCDF into xarray and adds timezone-aware `UTC` timestamps. |
-| `src/arotake/interpolation.py` | Bilinear xESMF interpolation of model fields to station coordinates, with a cached regridder. |
-| `src/arotake/stats_utils.py` | Regional and model-versus-observation statistics containers, consistency checks, pandas/xarray exports, and NetCDF serialization. |
-| `src/arotake/plotting.py` | Headless Matplotlib/Cartopy station maps, time series, and Gaussian KDE probability-density plots. |
-| `src/arotake/__init__.py` | Package version from distribution metadata, with `0.0.0+local` fallback. |
-| `tests/test_test.py`, `src/arotake/test.py` | One test for an addition helper; no scientific regression suite is supplied. |
-| `notebooks/ArotakeDemo.ipynb` | Download-and-analysis example using external HRRR/LCD packages; includes saved outputs. |
-| `docs/`, `plots/` | Existing example images. |
-| `scripts/`, `Makefile` | Environment setup, an exploratory data script, formatting/linting/testing, and Anaconda publishing. |
-| `pyproject.toml`, `environment.yml` | Packaging, dependencies, tool configuration, and Conda environment. |
-| `.github/workflows/ci.yml`, `.pre-commit-config.yaml` | CI checks and local hooks. |
+- Read the system specification `docs/specs/SYSTEM_SPEC.md`, if present, and the specification provided by the user for the current development step before proceeding.
+- If the user requests specification-driven development without providing a development-step specification, propose creating one before implementation.
+- Treat the system specification as accepted intended behavior and the development step specification as the current proposed change.
+- Review the proposed specification for ambiguities, omissions, untestable acceptance criteria, and contradictions with existing system requirements, interfaces, and constraints.
+- Resolve material ambiguities and omissions with the user. Do not begin implementation until the user approves.
+- Keep the development step specification aligned with approved requirements.
+- When feedback changes requirements, revise the development step specification before changing the implementation. Request approval for ambiguous or consequential changes.
+- Distinguish defects in implementation from changes in requirements.
+- Update code and automated tests, as appropriate, then report which acceptance criteria are satisfied, unverified, or blocked.
+- Do not declare user acceptance. The user decides when the development step is accepted after evaluating the result.
+- After acceptance, update docs/specs/SYSTEM_SPEC.md, if present, to reflect the accepted changes and remove superseded requirements.
+- Do not create version-numbered copies of specification files. Use Git for meaningful snapshots.
+- Do not create Git commits, merge branches, or delete branches unless explicitly requested.
 
 ## Architecture and Data Contracts
 
-`run_analysis` loads observations once, iterates inclusively over daily HRRR initialization dates at a fixed initialization hour and forecast lead, opens each forecast file, and extends a `ModelVsObs2DStatisticsTimeSeries`. That container selects the observation at the forecast valid time, interpolates the model to station locations, and calculates bias, RMSE, correlation, means, standard deviations, variances, and reporting-station diagnostics. Results are exported to NetCDF; optional plots go into `<results_stem>.plots/`, with a station map for `conus`. The API returns the results path and plot paths.
-
-`Model2DRegionalStatisticsTimeSeries` separately computes model-only regional statistics using GeoPandas geometry and regionmask. Both statistics containers accumulate values and metadata in `TimeList` objects and expose `extend`, `test_internal_consistency`, `DataFrame`, `DataSet`, and `write_ds2netcdf`. Preserve these existing public names.
-
-Preserve these input/output contracts unless the task explicitly changes them:
-
-- HRRR input layout: `hrrr.<YYYYMMDD>/<TAG>/hrrr.t<II>z.wrfsfcf<FF>.nc`; latitude/longitude names in the analysis module are `gridlat_0`/`gridlon_0`.
-- Model variable metadata includes `units`, `initial_time` formatted as `%m/%d/%Y (%H:%M)`, `forecast_time`, and `forecast_time_units == 'hours'`. Statistics derive forecast timing from this metadata, so it must agree with the requested files.
-- Observations use a `time` coordinate, station variables `LAT`/`LON`, a global `region` attribute, and variable `units`. The statistics implementation indexes observations as `(time, station)`. Maps also use global `name` and `long_name` attributes.
-- Each forecast valid time must have exactly one observation timestamp. The observation range must cover initialization time plus lead time, including dates beyond the initialization range.
-- Interpolation expects two final horizontal model dimensions with matching 2-D latitude/longitude arrays; target coordinates are matching 1-D arrays without NaNs. Model and target longitudes must lie in `[-180, 180]`. The interpolation helper supports leading dimensions, but the statistics consumer assumes station-indexable results; verify broader shape support before claiming it.
-- Unit strings must match exactly at comparison time. Missing observations are identified using NaNs; no-reporting timesteps produce NaN comparison metrics. Bias is model minus observation.
-- In-memory timestamps are UTC-aware; xarray output timestamps are timezone-naive `datetime64[ns]` representing UTC. Forecast lead values are serialized in hours, despite some comments/docstrings referring to seconds.
-- Preserve result variable names, global attributes, and per-variable `units`, `long_name`, and `description`. NetCDF plotting discovers variables via `description == 'time series'`.
-- DataFrame plotting prefers `df.attrs['column_attrs']` and falls back to legacy `Series.attrs`. Preserve both compatibility paths and global metadata when changing exports.
+Document established components, dependencies, data flows, public interfaces, formats, invariants, and compatibility requirements here. Record concrete constraints once verified; do not impose hypothetical ones on a new project.
 
 ## Environment and Setup
 
-[pyproject.toml](pyproject.toml) requires Python **3.12 or newer**, setuptools >=77, and wheel. CI exercises Python 3.12. Ruff's `py311` target is a separate tool setting, not the supported Python minimum.
-
-Runtime dependencies include NumPy, pandas, xarray, SciPy, NetCDF backends, Matplotlib, Cartopy, GeoPandas, pyproj, regionmask >=0.13, and xESMF >=0.9. [environment.yml](environment.yml) additionally lists native ESMF/ESMPy, PROJ, libnetcdf, the external `hrrr-data` and `lcd-v2-data` packages, development tools, and Jupyter support. There is no dependency lockfile in the supplied tree.
-
-Repository-defined setup workflows, subject to the isolation rules:
-
-- `make setup-dev-env` invokes [scripts/setup-dev-env.sh](scripts/setup-dev-env.sh). It requires Conda, prefers Mamba when available, writes `environment-dev.yml`, removes/recreates `arotake-dev`, installs `.[dev]` editable with `--no-deps`, replaces the user Jupyter kernel, and installs pre-commit hooks. **It has destructive environment-replacement and outside-root effects; do not run it as a routine validation step under the isolation boundary.** Its final activation instruction is `conda activate arotake-dev`.
-- CI installs with `pip install -e ".[dev]"`. Native geospatial dependency availability through that pip-only path has not been verified by this guide; do not infer successful installation from the workflow definition.
-- Packaging uses `setuptools.build_meta` and the `src/` layout. There is no dedicated Makefile build target. `make upload-anaconda` builds and publishes through [scripts/upload2anaconda.sh](scripts/upload2anaconda.sh); it is a release operation, not a local build check.
+Document the supported language and toolchain versions, dependency declarations, environment requirements, and verified setup procedure when they exist. Identify setup actions that install software, access the network, or modify files outside the root. Do not invent or automatically execute setup commands.
 
 ## Development Commands and Validation
 
-Run from the project root in an already available, permitted environment. Report missing dependencies instead of installing them automatically. Keep any generated files within the project boundary.
+Document actual repository-defined commands for running, building, linting, formatting, and testing as they become available. State which commands modify files, create caches, require network access, or have other side effects. Until commands are established, inspect the repository rather than guessing them.
 
-| Command | Verified behavior |
-| --- | --- |
-| `python -m ruff check .` | CI lint check without autofixes. |
-| `pytest` or `make test` | Runs tests under `tests/`; no coverage options are configured. |
-| `make fmt` | Runs `python -m ruff format`; modifies files. |
-| `make lint` | Runs `python -m ruff check --fix`; modifies files. |
-| `make check` | Runs both formatting and autofixing lint targets; modifies files. |
-
-The pre-commit configuration adds YAML/JSON checks, newline/whitespace fixes, and Ruff hooks. Running it may fetch external hook repositories. README claims about `make type`, strict mypy, and automatic coverage are inconsistent with the Makefile/configuration: there is no `type` target, mypy is commented out, and `make test` is plain pytest. CI runs lint and pytest; it does not establish scientific correctness or a successful end-to-end analysis.
-
-The CI test suite is intentionally limited to `tests/test_test.py`, which asserts `hrrr_ml.test.add(2, 2) == 4`. Do not add further CI tests unless explicitly requested by the user. Passing this placeholder does not establish numerical, model, netCDF, or operational correctness. For behavioral changes, use relevant safe checks with small in-repository inputs and report what was actually verified. Avoid live network calls and expensive retraining as default validation. Keep temporary verification files inside the repository and report validation limits explicitly.
+The CI test suite is intentionally limited to `tests/test_main.py`, which is initially empty in a new project. Do not add further CI tests unless explicitly requested by the user. Passing this placeholder does not establish numerical, model, netCDF, or operational correctness. For behavioral changes, use relevant safe checks with small in-repository inputs and report what was actually verified. Avoid live network calls and expensive retraining as default validation. Keep temporary verification files inside the repository and report validation limits explicitly.
 
 ## Coding Conventions
 
-- Follow [.editorconfig](.editorconfig): UTF-8, LF, final newline, four-space indentation, and two spaces for YAML/JSON/TOML. [.gitattributes](.gitattributes) also specifies LF.
-- Follow Ruff settings in `pyproject.toml`: line length 128, preserved quote style, rules `E`, `F`, `I`, `UP`, `B`, and `SIM`, with `E501` and `SIM108` ignored. Respect its excluded data/documentation/notebook/output directories.
-- Match nearby patterns: snake_case functions/variables, typed public interfaces where already used, `pathlib.Path` filesystem arguments, NumPy-style scientific docstrings, and xarray/pandas metadata propagation.
-- Statistics and analysis currently use assertions for consistency checks. Preserve checks and assess error behavior when modifying them; optimized Python can disable assertions.
-- Regridding and regional masks are cached using function/class attributes. Changes must account for grid, coordinate, and region changes across successive calls. Do not assume these shared caches are safe for concurrent use.
-- Keep plotting headless with the existing Agg backend and close created figures. Preserve the BSD-3-Clause licensing in [LICENSE](LICENSE).
+Follow repository configuration and established patterns in affected files. If there is no existing convention, use a consistent style appropriate to the task without introducing an unnecessary project-wide policy. Record agreed conventions here once established; avoid unrelated formatting changes.
+
+Prefer single quotes in computer code. Avoid unnecessary/excessive line breaks in code, only apply line breaks when lines are clearly too long.
+
+Follow `.editorconfig`: UTF-8, LF, final newline, four-space default indentation, two spaces for YAML/JSON/TOML, and tabs in Makefiles.
+
+### Python
+
+- Let leading and trailing doc string delimiters (''') stand on their own line.
+- Make filtering and masking explicit, and in associated code comments, state which values determine inclusion, which values are excluded, and which invalid values cause an exception.
+
+### Code documentation
+
+- When writing documentation, code comments, and docstrings, use plain, precise language that describes the actual behavior.
+- When editing documentation, preserve useful structure and detail, correct inaccuracies, and leave executable code unchanged unless requested.
+- Write the documentation for someone unfamiliar with the code. Explain what the code does, how to use it, its inputs and outputs, and relevant limitations.
+- Avoid unnecessary terminology, repetition, and implementation detail. Retain detail that helps the reader understand or use code correctly.
+- Use short, connected sentences and consistent terminology. Each sentence should add information.
+- Include implementation details only when they help the reader use the code or resolve a problem.
+- Do not add implementation or functional detail or specifics unless it is necessary for the user to understand objectives, usage, and results of a code.
+- Use the simplest accurate term. Add qualifiers only when they distinguish something meaningful. For example, prefer “loss” to “base loss” and “number” to “total number” unless the distinction is necessary.
+- Name quantities by what they represent. Distinguish errors, squared errors, sums, means, and counts. E.g., do not call an intermediate sum the loss when the returned loss is a normalized mean.
+- Explain calculations in logical order: define the quantities, describe which elements contribute, explain optional contributions, and state how the result is calculated.
+- Describe optional behavior precisely, including required parameter combinations, conditions for inclusion, and whether additional terms supplement or replace existing terms.
+- Match the implementation. Verify input requirements, return values, and exception conditions, including relevant edge cases. Do not infer behavior from existing documentation.
+- For docstrings, begin with a concise purpose statement, then explain behavior and provide structured parameter, return-value, and exception sections as appropriate.
+- Define abbreviations before using them.
 
 ## Configuration and External Interfaces
 
-The core analysis consumes local NetCDF files; downloading/preprocessing is delegated to the notebook's external packages. Their source and service behavior are outside this repository. The notebook uses `ESMFMKFILE` and removes it when it points to a missing file; investigate stale ESMF configuration only within the permitted boundary. No application `.env` loader or central configuration file is present; analysis settings are function/CLI arguments and module constants.
-
-The release script uses `ANACONDA_API_TOKEN` and optional overrides such as `ANACONDA_USER_NAME`, `LICENSE_ID`, `PYPROJECT`, `IMPORT_NAME_OVERRIDE`, `BUILD_ENV_PREFIX`, and `BUILD_ENV_NAME`. It creates external temporary directories and Conda environments and uploads to anaconda.org. Report these dependencies instead of executing the release workflow under project isolation; never record credentials in source or logs.
+Document verified configuration sources, environment-variable *names*, external interfaces, permissions, and operational dependencies as they are introduced. Never record secret values. External resources are not exempt from the project-isolation rules.
 
 ## Change and Review Workflow
 
-1. Read the relevant module and its callers, plus README/API examples. Keep changes focused on the requested behavior and avoid incidental notebook-output or image changes.
-2. Preserve CLI positional arguments, public signatures, statistics definitions, UTC/lead-time handling, metadata schemas, and output naming unless a change is requested. Update local examples/documentation when behavior changes.
-3. For scientific changes, add focused tests with small synthetic grids/station datasets covering the affected behavior. Useful cases include missing or duplicate timestamps, all-missing observations, incompatible units, changed interpolation grids/targets, metadata retention, and NetCDF round trips. Avoid requiring downloads in unit tests.
-4. Run applicable lint/tests when the environment and boundary permit. Review any formatter/autofix diff. Use a small local integration dataset only if supplied inside the root; keep its outputs isolated within the root because writers overwrite existing result files.
-5. Review for accidental generated artifacts, unrelated edits, credential exposure, and compatibility changes. Report what changed, checks performed, failures, and checks blocked by missing data or external dependencies.
-6. **Maintain `AGENTS.md`:** When making changes that affect the project's architecture, interfaces, dependencies, workflows, conventions, or documented constraints, update the relevant sections of `AGENTS.md` in the same change. Keep revisions focused and based on verified repository contents. Do not modify `AGENTS.md` for changes that do not affect its accuracy or usefulness.
+1. Inspect the repository state, relevant implementation, callers, tests, and local documentation before making changes. Preserve unrelated and uncommitted work.
+2. Implement the requested change with minimal unrelated modifications. Preserve established behavior and interfaces unless the request explicitly changes them.
+3. Add or update focused tests and relevant documentation when behavior changes. Avoid live services and expensive workloads for routine validation unless specifically required and authorized.
+4. Run applicable, safe checks using verified project commands. If prerequisites or permissions are missing, report the limitation rather than inventing a workaround that crosses the project boundary.
+5. Review the changed files and, when Git is available, `git diff --check`, `git diff`, and `git status`. Check for accidental generated files, credentials, destructive side effects, and compatibility changes. Summarize changes, checks performed, and remaining uncertainty.
+6. **Maintain `AGENTS.md`:** When changes affect the project's architecture, interfaces, dependencies, workflows, conventions, or documented constraints, update the relevant sections of `AGENTS.md` in the same change. Keep revisions focused and based on verified repository contents. Do not modify `AGENTS.md` when its accuracy and usefulness are unaffected.
 
 ## Known Limitations and Verification Gaps
 
-These are source observations or explicit verification gaps, not validated runtime outcomes:
-
-- Temperature conversion in `run_analysis` converts observations from `C`/`degC` to `K` before asserting equality with HRRR units; model conversion happens after that assertion. Celsius model inputs can therefore fail despite README's general conversion claim. Test ordering and units explicitly when changing this path.
-- `arg_parse(argv=None)` calls `parser.parse_args()` without passing `argv`, and `main(argv=None)` uses `sys.argv`. Do not assume supplied argument lists are honored.
-- `generate_plots=False` returns `[None]` for plot paths although the return annotation says `list[Path]`. Confirm the intended compatibility contract before changing it.
-- NetCDF writers overwrite existing files and remove conflicting time attributes from the passed dataset before serialization. Serialization changes require a round-trip check of timestamps, lead-time units, metadata, and numeric precision.
-- PDF plotting passes finite samples directly to `gaussian_kde`; empty, insufficient, or constant samples have no explicit guard. Verify edge cases when modifying PDF generation.
-- No scientific fixtures or input NetCDF datasets are supplied, and the sole test covers only `add(2, 2)`. Scientific accuracy, native dependency installation, CLI execution, and notebook reproducibility require manual validation with appropriate in-root inputs.
-- The notebook declares `lcd-v2-data` but imports `lcd_data`; compatibility depends on that external distribution and cannot be established from this repository. Its download cells use network access and write data; do not execute them merely to validate an unrelated change.
-- `scripts/test.py` is an exploratory script, not the pytest suite. It imports `isd_lite_data` (absent from declared dependencies) and refers to `../data/ISD-LITE/data` when run from the root. Do not follow that outside-root data dependency; report it.
+Record observed limitations, missing tests, unresolved dependencies, documentation discrepancies, and claims requiring runtime or manual verification. Clearly distinguish confirmed problems from unverified possibilities. Remove or revise entries when evidence changes.
