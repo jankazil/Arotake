@@ -8,24 +8,25 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        shell: bash -el {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.12']
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create Conda environment
-        uses: conda-incubator/setup-miniconda@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          miniforge-version: latest
-          environment-file: environment-ci.yml
-          activate-environment: ci
-          auto-activate: true
+          python-version: ${{ matrix.python-version }}
+          cache: pip
 
-      - name: Install project
-        run: python -m pip install --no-deps -e .
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install project and Ruff
+        run: python -m pip install -e ".[dev]" ruff
 
       - name: Show critical versions
         run: |
@@ -40,8 +41,8 @@ jobs:
                   print(f"{pkg} NOT INSTALLED: {e}")
           PY
 
-      - name: Lint
+      - name: Lint (Ruff)
         run: ruff check .
 
-      - name: Test
-        run: python -m pytest
+      - name: Test (pytest)
+        run: pytest
