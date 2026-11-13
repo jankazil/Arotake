@@ -25,8 +25,8 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
-      - name: Install project and Ruff
-        run: python -m pip install -e ".[dev]" ruff
+      - name: Install project
+        run: python -m pip install -e ".[dev]"
 
       - name: Show critical versions
         run: |
@@ -41,8 +41,24 @@ jobs:
                   print(f"{pkg} NOT INSTALLED: {e}")
           PY
 
-      - name: Lint (Ruff)
-        run: ruff check .
 
       - name: Test (pytest)
         run: pytest
+
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v4
+        with:
+          miniforge-version: latest
+          activate-environment: ci-lint
+      - name: Install Ruff
+        run: conda install --yes --name ci-lint --override-channels --channel conda-forge ruff
+      - name: Lint (Ruff)
+        run: conda run --name ci-lint ruff check .
