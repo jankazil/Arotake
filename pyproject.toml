@@ -33,7 +33,6 @@ analyze-hrrr-vs-observations = "arotake.analyze_hrrr_vs_observations:main" # Con
 dev = [
   "pytest>=8",
   "pytest-cov>=5",
-  "ruff>=0.5",
   "pre-commit>=3.7",
 ]
 
