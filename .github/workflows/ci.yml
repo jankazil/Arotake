@@ -2,40 +2,46 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ['3.12']
+
+    defaults:
+      run:
+        shell: bash -el {0}
+
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Create Conda environment
+        uses: conda-incubator/setup-miniconda@v4
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
+          miniforge-version: latest
+          environment-file: environment-ci.yml
+          activate-environment: ci
+          auto-activate: true
+
       - name: Install project
-        run: pip install -e ".[dev]"
+        run: python -m pip install --no-deps -e .
+
       - name: Show critical versions
         run: |
           python -V
           python - << 'PY'
           import importlib
-          for pkg in ("numpy","numba","llvmlite","xesmf","xarray"):
+          for pkg in ("numpy", "numba", "llvmlite", "xesmf", "xarray"):
               try:
                   m = importlib.import_module(pkg)
-                  print(f"{pkg} {getattr(m,'__version__','n/a')}")
+                  print(f"{pkg} {getattr(m, '__version__', 'n/a')}")
               except Exception as e:
                   print(f"{pkg} NOT INSTALLED: {e}")
           PY
-      - name: Lint (ruff)
-        run: python -m ruff check .
-      - name: Test (pytest)
-        run: pytest
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test
+        run: python -m pytest
