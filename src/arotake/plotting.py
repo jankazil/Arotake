@@ -408,9 +408,9 @@ def plot_locations_conus(
 
     # Make sure that all lists have the same length:
 
-    assert (
-        len(data_obss) == len(start_dates) == len(end_dates) == len(obs_lat_names) == len(obs_lon_names) == len(colors)
-    ), 'Arguments are lists of different length. Aborting.'
+    assert len(data_obss) == len(start_dates) == len(end_dates) == len(obs_lat_names) == len(obs_lon_names) == len(colors), (
+        'Arguments are lists of different length. Aborting.'
+    )
 
     # Define the target map projection (Lambert Conformal as in HRRR)
     hrrr_proj = ccrs.LambertConformal(

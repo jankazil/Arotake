@@ -346,9 +346,9 @@ class Model2DRegionalStatisticsTimeSeries:
 
             assert len(set(self.model_variable)) <= 1, 'Time series is internally inconsistent in the model variables'
 
-            assert (
-                len(set(self.model_variable_long_name)) <= 1
-            ), 'Time series is internally inconsistent in the model variable long names'
+            assert len(set(self.model_variable_long_name)) <= 1, (
+                'Time series is internally inconsistent in the model variable long names'
+            )
 
             assert len(set([string.strftime("%H:%M:%S") for string in self.model_forecast_init_time[:]])) <= 1, (
                 'Time series is internally inconsistent in the ' + self.model_forecast_init_time.description
@@ -1089,9 +1089,9 @@ class ModelVsObs2DStatisticsTimeSeries:
 
             assert len(set(self.obs_variable)) <= 1, 'Time series is internally inconsistent in the observation variables'
 
-            assert (
-                len(set(self.obs_variable_long_name)) <= 1
-            ), 'Time series is internally inconsistent in the observation variable long names'
+            assert len(set(self.obs_variable_long_name)) <= 1, (
+                'Time series is internally inconsistent in the observation variable long names'
+            )
 
             assert len(set(self.model_name)) <= 1, 'Time series covers different models'
 
@@ -1099,9 +1099,9 @@ class ModelVsObs2DStatisticsTimeSeries:
 
             assert len(set(self.model_variable)) <= 1, 'Time series is internally inconsistent in the model variables'
 
-            assert (
-                len(set(self.model_variable_long_name)) <= 1
-            ), 'Time series is internally inconsistent in the model variable long names'
+            assert len(set(self.model_variable_long_name)) <= 1, (
+                'Time series is internally inconsistent in the model variable long names'
+            )
 
             assert len(set([string.strftime("%H:%M:%S") for string in self.model_forecast_init_time[:]])) <= 1, (
                 'Time series is internally inconsistent in the ' + self.model_forecast_init_time.description
